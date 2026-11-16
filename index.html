@@ -1,0 +1,3122 @@
+<html lang="ca"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agut o Greu - Puja la Muntanya! (Infantil)</title>
+  <!-- Llibreria de Confeti per a les Celebracions -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Comic Sans MS', 'Chalkboard SE', 'Bubblegum Sans', system-ui, -apple-system, sans-serif;
+      background: #0f172a;
+    }
+
+    #game-container {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    /* BOTONS FLOTANTS SUPERIOR */
+    .btn-exit-game {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: #ef4444;
+      color: #fff;
+      border: 3px solid #fff;
+      border-radius: 50px;
+      padding: 8px 18px;
+      font-size: clamp(0.85rem, 1.8vw, 1.1rem);
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #991b1b, 0 6px 15px rgba(0,0,0,0.5);
+      z-index: 50;
+      transition: transform 0.1s;
+    }
+    .btn-exit-game:active { transform: scale(0.95); }
+
+    .btn-config {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: #38bdf8;
+      color: #0f172a;
+      border: 3px solid #fff;
+      border-radius: 50px;
+      padding: 8px 18px;
+      font-size: clamp(0.85rem, 1.8vw, 1.1rem);
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #0284c7, 0 6px 15px rgba(0,0,0,0.5);
+      z-index: 50;
+      transition: transform 0.1s;
+    }
+    .btn-config:active { transform: scale(0.95); }
+
+    /* PANTALLA D'INICI / MENÚ PRINCIPAL */
+    .start-screen {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(circle, rgba(15,23,42,0.92) 0%, rgba(15,23,42,0.98) 100%);
+      z-index: 90;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      text-align: center;
+      gap: 16px;
+      overflow-y: auto;
+    }
+
+    .start-title {
+      font-size: clamp(2.4rem, 6vw, 4.2rem);
+      color: #ffcc00;
+      text-shadow: 0 0 25px rgba(255,204,0,0.6), 4px 4px #000;
+      font-weight: 900;
+      letter-spacing: 2px;
+    }
+
+    .start-subtitle {
+      font-size: clamp(1rem, 2.2vw, 1.4rem);
+      color: #38bdf8;
+      text-shadow: 2px 2px #000;
+      font-weight: bold;
+      max-width: 600px;
+      margin-bottom: 10px;
+    }
+
+    /* SEGUIMENT DELS 4 INSTRUMENTS AL CIM */
+    .gems-tracker-start {
+      background: rgba(30, 41, 59, 0.85);
+      border: 3px solid #ffcc00;
+      border-radius: 20px;
+      padding: 14px 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+
+    .gems-tracker-title {
+      font-size: 0.9rem;
+      color: #ffcc00;
+      font-weight: bold;
+    }
+
+    .gems-grid {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .gem-item {
+      background: #0f172a;
+      border: 2px solid #475569;
+      border-radius: 14px;
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      opacity: 0.45;
+      filter: grayscale(0.8);
+      transition: all 0.3s;
+    }
+
+    .gem-item.unlocked {
+      opacity: 1;
+      filter: grayscale(0);
+      border-color: #22c55e;
+      box-shadow: 0 0 15px rgba(34, 197, 94, 0.5);
+      transform: scale(1.05);
+    }
+
+    .gem-icon { font-size: 1.8rem; }
+    .gem-name { font-size: 0.65rem; color: #fff; font-weight: bold; margin-top: 4px; }
+
+    .btn-reset-gems {
+      background: transparent;
+      border: 1px dashed #94a3b8;
+      color: #94a3b8;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      margin-top: 4px;
+    }
+    .btn-reset-gems:hover { color: #fff; border-color: #fff; }
+
+    .btn-start-menu {
+      background: linear-gradient(180deg, #22c55e 0%, #15803d 100%);
+      color: #fff;
+      border: 4px solid #fff;
+      border-radius: 50px;
+      padding: 16px 45px;
+      font-size: clamp(1.3rem, 2.8vw, 1.8rem);
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 8px 0 #14532d, 0 12px 25px rgba(0,0,0,0.6);
+      transition: transform 0.15s, filter 0.15s;
+      font-family: inherit;
+    }
+    .btn-start-menu:hover { transform: scale(1.04); filter: brightness(1.1); }
+    .btn-start-menu:active { transform: scale(0.96); }
+
+    .btn-start-menu.btn-level2 {
+      background: linear-gradient(180deg, #f97316 0%, #c2410c 100%);
+      box-shadow: 0 8px 0 #9a3412, 0 12px 25px rgba(0,0,0,0.6);
+    }
+
+    .btn-start-config {
+      background: transparent;
+      border: 2px solid #38bdf8;
+      color: #38bdf8;
+      font-size: 0.9rem;
+      font-weight: bold;
+      padding: 8px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-start-config:hover { background: rgba(56, 189, 248, 0.15); }
+
+    /* PANTALLA SELECCIÓ D'INSTRUMENT I PERSONATGE */
+    .char-select-screen {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.96);
+      z-index: 85;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      gap: 16px;
+      overflow-y: auto;
+    }
+
+    .select-section-title {
+      font-size: clamp(1rem, 2.2vw, 1.3rem);
+      color: #ffcc00;
+      font-weight: bold;
+      text-align: center;
+      text-shadow: 1px 1px #000;
+    }
+
+    .gem-select-grid {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .gem-select-card {
+      background: #1e293b;
+      border: 3px solid #475569;
+      border-radius: 16px;
+      padding: 12px 18px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      width: 130px;
+    }
+
+    .gem-select-card:hover {
+      transform: translateY(-4px);
+      border-color: #ffcc00;
+    }
+
+    .gem-select-card.selected {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.2);
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
+      transform: scale(1.05);
+    }
+
+    .gem-select-card.already-unlocked {
+      opacity: 0.65;
+    }
+
+    .char-cards-container {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .char-card {
+      background: #1e293b;
+      border: 4px solid #475569;
+      border-radius: 20px;
+      padding: 14px;
+      width: 140px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+
+    .char-card:hover { transform: scale(1.04); }
+    .char-card.selected {
+      border-color: #ffcc00;
+      background: rgba(255, 204, 0, 0.15);
+      box-shadow: 0 0 25px rgba(255, 204, 0, 0.4);
+    }
+
+    .char-card-avatar {
+      width: 75px;
+      height: 75px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+    .char-card-name {
+      font-size: 0.85rem;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    /* HUD / BARRA SUPERIOR DE PROGRÉS */
+    .hud {
+      position: absolute;
+      top: 0; left: 0; width: 100%;
+      padding: 14px 16px;
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .progress-hud-container {
+      background: rgba(15, 23, 42, 0.88);
+      border: 3px solid #ffcc00;
+      border-radius: 24px;
+      padding: 10px 20px;
+      width: 100%;
+      max-width: 650px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      pointer-events: auto;
+    }
+
+    .progress-bar-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .hud-char-avatar {
+      width: 44px;
+      height: 44px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    }
+
+    .health-bar-container {
+      flex: 1;
+      height: 22px;
+      background: #334155;
+      border: 2px solid #fff;
+      border-radius: 50px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .health-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #22c55e);
+      border-radius: 50px;
+      transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .progress-text {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 1px 1px #000;
+    }
+
+    .hud-gem-target {
+      font-size: 2rem;
+      filter: drop-shadow(0 0 8px #ffcc00);
+      animation: pulseGemTarget 1.5s infinite alternate;
+    }
+
+    @keyframes pulseGemTarget {
+      from { transform: scale(1); }
+      to { transform: scale(1.15); }
+    }
+
+    .timer-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: #ffcc00;
+      font-weight: bold;
+    }
+
+    .hud-gems-bar {
+      display: flex;
+      gap: 6px;
+    }
+
+    .hud-gem-slot {
+      font-size: 1.1rem;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid #475569;
+      border-radius: 8px;
+      padding: 2px 6px;
+      opacity: 0.35;
+      filter: grayscale(1);
+    }
+    .hud-gem-slot.unlocked {
+      opacity: 1;
+      filter: grayscale(0);
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.2);
+    }
+    .hud-gem-slot.current-target {
+      opacity: 1;
+      filter: grayscale(0);
+      border-color: #ffcc00;
+      background: rgba(255, 204, 0, 0.25);
+      animation: bounceSlot 1s infinite alternate;
+    }
+
+    @keyframes bounceSlot {
+      from { transform: translateY(0); }
+      to { transform: translateY(-3px); }
+    }
+
+    /* ESCENARI DE LA MUNTANYA */
+    .stage {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .mountain-container {
+      position: absolute;
+      bottom: 0; left: 0; width: 100%; height: 85%;
+    }
+
+    .mountain-svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* FITES DEL CAMÍ SOBRE LA MUNTANYA */
+    .path-node {
+      position: absolute;
+      width: clamp(28px, 4.5vw, 42px);
+      height: clamp(28px, 4.5vw, 42px);
+      background: #1e293b;
+      border: 3px solid #64748b;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(0.65rem, 1vw, 0.8rem);
+      font-weight: bold;
+      color: #e2e8f0;
+      text-shadow: 1px 1px #000;
+    }
+
+    .path-node.reached {
+      background: #22c55e;
+      border-color: #fff;
+      color: #fff;
+      box-shadow: 0 0 12px #22c55e, 0 0 20px rgba(34, 197, 94, 0.6);
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+
+    .path-node.summit-node {
+      border-color: #ffcc00;
+      background: rgba(180, 83, 9, 0.95);
+    }
+
+    .path-node.summit-node.reached {
+      background: #eab308;
+      box-shadow: 0 0 16px #ffcc00;
+    }
+
+    .character-runner {
+      position: absolute;
+      width: clamp(64px, 8.5vw, 96px);
+      height: clamp(72px, 10dvh, 112px);
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: bottom center;
+      transition: left 0.8s cubic-bezier(0.25, 1, 0.5, 1), top 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.4s ease;
+      filter: drop-shadow(0 8px 12px rgba(0,0,0,0.85));
+      z-index: 5;
+      transform: translate(-50%, -92%);
+    }
+
+    .character-runner.jump-walk {
+      animation: animJumpWalk 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .character-runner.shake-red {
+      animation: animShakeRed 0.8s ease-in-out;
+    }
+
+    @keyframes animJumpWalk {
+      0% { transform: translate(-50%, -92%) translateY(0); }
+      50% { transform: translate(-50%, -92%) translateY(-34px) scale(1.12); }
+      100% { transform: translate(-50%, -92%) translateY(0); }
+    }
+
+    @keyframes animShakeRed {
+      0% { filter: brightness(1) drop-shadow(0 8px 12px rgba(0,0,0,0.85)); transform: translate(-50%, -92%); }
+      20% { filter: brightness(3) sepia(1) hue-rotate(-50deg); transform: translate(-65%, -92%) rotate(-8deg); }
+      40% { filter: brightness(4) sepia(1) hue-rotate(-50deg); transform: translate(-35%, -92%) rotate(8deg); }
+      60% { filter: brightness(3) sepia(1) hue-rotate(-50deg); transform: translate(-55%, -92%) rotate(-5deg); }
+      80% { filter: brightness(2) sepia(1); transform: translate(-45%, -92%); }
+      100% { filter: brightness(1) drop-shadow(0 8px 12px rgba(0,0,0,0.85)); transform: translate(-50%, -92%); }
+    }
+
+    .gem-destination {
+      position: absolute;
+      font-size: clamp(2.3rem, 4.5vw, 3.6rem);
+      z-index: 6;
+      animation: floatGem 2s infinite ease-in-out;
+      filter: drop-shadow(0 0 15px rgba(255, 204, 0, 0.9));
+      transition: all 0.5s ease;
+      transform: translate(-50%, -50%);
+    }
+
+    .gem-destination.gem-collect-glow {
+      animation: gemCollectGlow 1.2s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes floatGem {
+      0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+      50% { transform: translate(-50%, -50%) translateY(-10px); }
+    }
+
+    @keyframes gemCollectGlow {
+      0% { transform: translate(-50%, -50%) scale(1); filter: drop-shadow(0 0 15px #ffcc00); }
+      50% { transform: translate(-50%, -50%) scale(1.8) rotate(15deg); filter: drop-shadow(0 0 40px #fff) drop-shadow(0 0 60px #ffcc00); }
+      100% { transform: translate(-50%, -50%) scale(1.4) rotate(0deg); filter: drop-shadow(0 0 30px #ffcc00); }
+    }
+
+    .floating-text {
+      position: absolute;
+      top: 20%;
+      font-size: clamp(1.3rem, 3vw, 2.2rem);
+      font-weight: bold;
+      text-shadow: 3px 3px 0 #000, -2px -2px 0 #000;
+      pointer-events: none;
+      z-index: 120;
+      animation: floatUp 1.8s ease-out forwards;
+    }
+
+    @keyframes floatUp {
+      0% { opacity: 0; transform: translateY(20px) scale(0.6); }
+      20% { opacity: 1; transform: translateY(-10px) scale(1.2); }
+      80% { opacity: 1; transform: translateY(-50px) scale(1); }
+      100% { opacity: 0; transform: translateY(-80px) scale(0.8); }
+    }
+
+    /* MODAL POP-UP PREGUNTA */
+    .modal-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(5px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      padding: 16px;
+    }
+
+    .modal-quiz {
+      background: rgba(15, 23, 42, 0.96);
+      border: 5px solid #ffcc00;
+      border-radius: 24px;
+      width: 100%;
+      max-width: 560px;
+      padding: 22px 24px;
+      box-shadow: 0 20px 45px rgba(0,0,0,0.85), 0 0 25px rgba(255, 204, 0, 0.35);
+      animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      max-height: 94vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.85); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .quiz-timer-bar-container {
+      width: 100%;
+      height: 16px;
+      background: #334155;
+      border: 2px solid #ffcc00;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .quiz-timer-bar {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #22c55e, #eab308, #ef4444);
+      transition: width 0.1s linear;
+    }
+
+    .quiz-timer-text {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      color: #fff;
+      text-shadow: 1px 1px #000;
+      font-weight: bold;
+    }
+
+    .question-title {
+      font-size: clamp(1.25rem, 2.8vw, 1.7rem);
+      line-height: 1.3;
+      color: #fff;
+      text-align: center;
+      font-weight: bold;
+      text-shadow: 2px 2px #000;
+    }
+
+    .quiz-image-container {
+      width: 100%;
+      max-height: 140px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(0, 0, 0, 0.4);
+      border: 2px solid #334155;
+    }
+
+    .quiz-image {
+      max-width: 100%;
+      max-height: 140px;
+      object-fit: contain;
+    }
+
+    /* BOTONS GRANS AGUT (DALT) I GREU (BAIX) */
+    .pitch-choice-btn {
+      width: 100%;
+      padding: 18px 24px;
+      border-radius: 22px;
+      border: 4px solid #fff;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      font-family: inherit;
+      font-weight: 900;
+      font-size: clamp(1.6rem, 4vw, 2.3rem);
+      letter-spacing: 2px;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+    }
+
+    .pitch-choice-btn:hover {
+      transform: scale(1.03);
+      filter: brightness(1.08);
+    }
+
+    .pitch-choice-btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn-agut {
+      background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+      box-shadow: 0 8px 0 #0369a1, 0 12px 24px rgba(2, 132, 199, 0.45);
+    }
+
+    .btn-greu {
+      background: linear-gradient(180deg, #f97316 0%, #c2410c 100%);
+      box-shadow: 0 8px 0 #9a3412, 0 12px 24px rgba(194, 65, 12, 0.45);
+    }
+
+    .pitch-arrow-svg {
+      width: clamp(46px, 8vw, 64px);
+      height: clamp(46px, 8vw, 64px);
+      flex-shrink: 0;
+      filter: drop-shadow(0 3px 4px rgba(0,0,0,0.4));
+    }
+
+    .pitch-choice-btn.correct-feedback {
+      background: linear-gradient(180deg, #22c55e 0%, #15803d 100%) !important;
+      box-shadow: 0 8px 0 #14532d, 0 0 25px #22c55e !important;
+      border-color: #fff !important;
+      animation: pulseGreen 0.5s infinite alternate;
+    }
+
+    .pitch-choice-btn.wrong-feedback {
+      background: linear-gradient(180deg, #ef4444 0%, #991b1b 100%) !important;
+      box-shadow: 0 6px 0 #7f1d1d !important;
+      opacity: 0.65;
+    }
+
+    @keyframes pulseGreen {
+      from { transform: scale(1); }
+      to { transform: scale(1.04); }
+    }
+
+    .quiz-audio-container {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      background: rgba(30, 41, 59, 0.9);
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 3px solid #ffcc00;
+      box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
+    }
+
+    .btn-replay-audio {
+      background: #ffcc00;
+      color: #0f172a;
+      border: 3px solid #fff;
+      border-radius: 50px;
+      padding: 10px 24px;
+      font-size: clamp(1rem, 2.2vw, 1.25rem);
+      font-weight: 900;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 5px 0 #ca8a04;
+      transition: transform 0.15s;
+    }
+
+    .btn-replay-audio:hover {
+      transform: scale(1.05);
+      background: #fde047;
+    }
+
+    .btn-replay-audio:active {
+      transform: scale(0.96);
+    }
+
+    .audio-wave-indicator {
+      font-size: 0.95rem;
+      color: #38bdf8;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .quiz-audio-player {
+      width: 100%;
+      max-width: 380px;
+      height: 36px;
+    }
+
+    .feedback-msg {
+      text-align: center;
+      font-size: 1.15rem;
+      color: #ef4444;
+      font-weight: bold;
+    }
+
+    /* PANTALLA DE RESULTATS FINALS */
+    .results-screen {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(10px);
+      z-index: 180;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .results-card {
+      background: #1e293b;
+      border: 4px solid #ffcc00;
+      border-radius: 20px;
+      padding: 25px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .results-title {
+      font-size: clamp(1.6rem, 3.5vw, 2.3rem);
+      text-shadow: 3px 3px #000;
+      font-weight: bold;
+    }
+    .results-title.win { color: #22c55e; }
+    .results-title.lose { color: #ef4444; }
+
+    .gem-unlocked-banner {
+      background: rgba(255, 204, 0, 0.15);
+      border: 2px dashed #ffcc00;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 1rem;
+      color: #ffcc00;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-weight: bold;
+    }
+
+    .stats-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: #0f172a;
+      padding: 14px;
+      border-radius: 12px;
+      text-align: left;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    /* PANTALLA DE CELEBRACIÓ DELS 4 INSTRUMENTS */
+    .grand-celebration-screen {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(circle, #312e81 0%, #09090b 100%);
+      z-index: 300;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .celebration-title {
+      font-size: clamp(1.8rem, 4.8vw, 3.4rem);
+      color: #ffcc00;
+      text-shadow: 0 0 20px #ffcc00, 4px 4px #e74c3c;
+      animation: pulseTitle 1.2s infinite alternate;
+      margin-bottom: 8px;
+      line-height: 1.3;
+      font-weight: 900;
+    }
+
+    @keyframes pulseTitle {
+      0% { transform: scale(0.95); filter: drop-shadow(0 0 10px #ffcc00); }
+      100% { transform: scale(1.06); filter: drop-shadow(0 0 30px #38bdf8); }
+    }
+
+    .celebration-subtitle {
+      font-size: clamp(1rem, 2.4vw, 1.4rem);
+      color: #38bdf8;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px #000;
+      line-height: 1.4;
+      font-weight: bold;
+    }
+
+    .celebration-hero-wrapper {
+      position: relative;
+      width: clamp(240px, 42vw, 380px);
+      height: clamp(260px, 46vw, 420px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .celebration-halo {
+      position: absolute;
+      width: 110%;
+      height: 110%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 204, 0, 0.75) 0%, rgba(56, 189, 248, 0.4) 45%, transparent 75%);
+      animation: spinHalo 6s linear infinite;
+    }
+
+    @keyframes spinHalo {
+      0% { transform: rotate(0deg) scale(1); }
+      50% { transform: rotate(180deg) scale(1.18); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+
+    .celebration-character {
+      position: relative;
+      width: 90%;
+      height: 90%;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center bottom;
+      filter: drop-shadow(0 0 30px rgba(255, 204, 0, 0.95)) drop-shadow(0 10px 20px rgba(0, 0, 0, 0.8));
+      animation: danceFestive 1.1s ease-in-out infinite alternate;
+      z-index: 5;
+    }
+
+    @keyframes danceFestive {
+      0% { transform: translateY(0) rotate(-8deg) scale(1.05); }
+      25% { transform: translateY(-35px) rotate(0deg) scale(1.18); }
+      50% { transform: translateY(0) rotate(8deg) scale(1.05); }
+      75% { transform: translateY(-25px) rotate(-4deg) scale(1.15); }
+      100% { transform: translateY(0) rotate(6deg) scale(1.08); }
+    }
+
+    .festive-decorations {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0; left: 0;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .festive-decorations span {
+      position: absolute;
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      animation: floatFestive 2.5s ease-in-out infinite alternate;
+    }
+
+    .festive-decorations span:nth-child(1) { top: 10%; left: 8%; animation-delay: 0s; }
+    .festive-decorations span:nth-child(2) { top: 12%; right: 10%; animation-delay: 0.4s; }
+    .festive-decorations span:nth-child(3) { bottom: 22%; left: 10%; animation-delay: 0.8s; }
+    .festive-decorations span:nth-child(4) { bottom: 20%; right: 8%; animation-delay: 1.2s; }
+    .festive-decorations span:nth-child(5) { top: 38%; left: 4%; animation-delay: 0.6s; }
+    .festive-decorations span:nth-child(6) { top: 36%; right: 4%; animation-delay: 1s; }
+
+    @keyframes floatFestive {
+      0% { transform: translateY(0) rotate(-18deg) scale(0.9); }
+      100% { transform: translateY(-28px) rotate(18deg) scale(1.25); }
+    }
+
+    .celebration-animals-bar {
+      display: flex;
+      gap: 18px;
+      font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+      margin-bottom: 20px;
+      background: rgba(15, 23, 42, 0.85);
+      padding: 10px 28px;
+      border-radius: 30px;
+      border: 3px solid #ffcc00;
+      box-shadow: 0 0 25px rgba(255, 204, 0, 0.5);
+    }
+
+    .celebration-animals-bar span {
+      animation: bounceGem 0.9s ease-in-out infinite alternate;
+    }
+
+    .celebration-animals-bar span:nth-child(1) { animation-delay: 0s; }
+    .celebration-animals-bar span:nth-child(2) { animation-delay: 0.2s; }
+    .celebration-animals-bar span:nth-child(3) { animation-delay: 0.4s; }
+    .celebration-animals-bar span:nth-child(4) { animation-delay: 0.6s; }
+
+    @keyframes bounceGem {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-16px); }
+    }
+
+    /* PANELL DE CONFIGURACIÓ */
+    .config-modal {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.92);
+      z-index: 200;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      overflow-y: auto;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    .config-container {
+      width: 100%;
+      max-width: 750px;
+      background: #1e293b;
+      border: 3px solid #ffcc00;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+    }
+
+    .config-tabs {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #334155;
+      padding-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      flex: 1;
+      min-width: 110px;
+      padding: 10px;
+      background: #0f172a;
+      border: 1px solid #475569;
+      color: #94a3b8;
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .tab-btn.active {
+      background: #ffcc00;
+      color: #000;
+      border-color: #ffcc00;
+    }
+
+    .tab-content {
+      display: none;
+      flex-direction: column;
+      gap: 15px;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+    .tab-content.active { display: flex; }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.85rem;
+      color: #ffcc00;
+      font-weight: bold;
+    }
+
+    .form-control {
+      padding: 10px;
+      background: #0f172a;
+      border: 1px solid #475569;
+      color: #fff;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-family: inherit;
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .btn-action {
+      background: #22c55e;
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.95rem;
+      transition: background 0.2s;
+      font-family: inherit;
+    }
+    .btn-action:hover { background: #16a34a; }
+
+    .btn-close {
+      background: #ef4444;
+      margin-top: 10px;
+    }
+    .btn-close:hover { background: #dc2626; }
+
+    .q-item {
+      background: #0f172a;
+      padding: 14px 16px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    .q-item-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      word-break: break-word;
+    }
+
+    .q-item-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .q-item button {
+      border: none;
+      color: white;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+
+    .btn-edit-q {
+      background: #0284c7;
+    }
+    .btn-edit-q:hover {
+      background: #0369a1;
+    }
+
+    .btn-delete-q {
+      background: #ef4444;
+    }
+    .btn-delete-q:hover {
+      background: #dc2626;
+    }
+
+    /* MODAL ACCÉS CONFIGURACIÓ (PIN 4 XIFRES) */
+    .pin-modal {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.95);
+      z-index: 250;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    .pin-card {
+      background: #1e293b;
+      border: 3px solid #ffcc00;
+      border-radius: 12px;
+      padding: 24px;
+      width: 100%;
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+
+    .pin-input {
+      letter-spacing: 12px;
+      font-size: 1.8rem;
+      text-align: center;
+      width: 180px;
+      padding: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="game-container" style="background-image: url(&quot;https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&amp;fit=crop&amp;w=1200&amp;q=80&quot;);">
+    <button class="btn-exit-game" id="btn-exit-game" onclick="exitToStartScreen()" style="display: block;">❌ SORTIR</button>
+    <button class="btn-config" id="btn-main-config" onclick="checkPinAndOpenConfig()" style="display: block;">⚙️ CONFIG</button>
+
+    <!-- PANTALLA DE PRESENTACIÓ / INICI -->
+    <div class="start-screen" id="start-screen" style="display: flex;">
+      <div class="start-title">AGUT O GREU</div>
+      <div class="start-subtitle">Escolta el so i puja la muntanya! · Miguel Castellá</div>
+
+      <!-- SEGUIMENT DELS 4 INSTRUMENTS INICI -->
+      <div class="gems-tracker-start">
+        <div class="gems-tracker-title">🎵 ELS 4 INSTRUMENTS MUSICALS AL CIM:</div>
+        <div class="gems-grid" id="gems-tracker-grid"><div class="gem-item ">
+          <div class="gem-icon">🎸</div>
+          <div class="gem-name">Guitarra</div>
+        </div><div class="gem-item ">
+          <div class="gem-icon">🎹</div>
+          <div class="gem-name">Piano</div>
+        </div><div class="gem-item ">
+          <div class="gem-icon">🥁</div>
+          <div class="gem-name">Bateria</div>
+        </div><div class="gem-item ">
+          <div class="gem-icon">🎺</div>
+          <div class="gem-name">Trompeta</div>
+        </div></div>
+        <button class="btn-reset-gems" onclick="resetGemsProgress()">🔄 Reiniciar Instruments</button>
+      </div>
+
+      <button class="btn-start-menu" onclick="openCharSelect(false)">🎵 Jugar (sense temps)</button>
+      <button class="btn-start-menu btn-level2" onclick="openCharSelect(true)">⏱️ Jugar (amb temps)</button>
+      <button class="btn-start-config" onclick="openConfigFromStart()">⚙️ CONFIGURACIÓ</button>
+    </div>
+
+    <!-- PANTALLA SELECCIÓ D'INSTRUMENT I PERSONATGE -->
+    <div class="char-select-screen" id="char-select-screen" style="display: none;">
+      <div class="select-section-title">1. TRIA L'INSTRUMENT QUE VOLS ACONSEGUIR</div>
+      <div class="gem-select-grid" id="gem-select-container"><div class="gem-select-card selected">
+          <div style="font-size: 2.2rem;">🎸</div>
+          <div style="font-size: 0.85rem; color: #fff; font-weight: bold;">Guitarra</div>
+          <div style="font-size: 0.7rem; color: #ffcc00; font-weight: bold;">
+            PENDENT 🔒
+          </div>
+        </div><div class="gem-select-card">
+          <div style="font-size: 2.2rem;">🎹</div>
+          <div style="font-size: 0.85rem; color: #fff; font-weight: bold;">Piano</div>
+          <div style="font-size: 0.7rem; color: #ffcc00; font-weight: bold;">
+            PENDENT 🔒
+          </div>
+        </div><div class="gem-select-card">
+          <div style="font-size: 2.2rem;">🥁</div>
+          <div style="font-size: 0.85rem; color: #fff; font-weight: bold;">Bateria</div>
+          <div style="font-size: 0.7rem; color: #ffcc00; font-weight: bold;">
+            PENDENT 🔒
+          </div>
+        </div><div class="gem-select-card">
+          <div style="font-size: 2.2rem;">🎺</div>
+          <div style="font-size: 0.85rem; color: #fff; font-weight: bold;">Trompeta</div>
+          <div style="font-size: 0.7rem; color: #ffcc00; font-weight: bold;">
+            PENDENT 🔒
+          </div>
+        </div></div>
+
+      <div class="select-section-title">2. TRIA EL TEU PERSONATGE</div>
+      <div class="char-cards-container">
+        <div class="char-card selected" id="card-p1a" onclick="selectFighter(1)">
+          <div class="char-card-avatar" id="select-avatar-p1a" style="background-image: url(&quot;https://static.wixstatic.com/media/a6e1f9_72a257079fc34ae69a4566a639687a20~mv2.png/v1/fill/w_208,h_254,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a6e1f9_72a257079fc34ae69a4566a639687a20~mv2.png&quot;);"></div>
+          <div class="char-card-name" id="select-name-p1a">Jessie</div>
+        </div>
+        <div class="char-card" id="card-p1b" onclick="selectFighter(2)">
+          <div class="char-card-avatar" id="select-avatar-p1b" style="background-image: url(&quot;https://static.wixstatic.com/media/a6e1f9_a68f7b61e2c442dc909c81e9f1336826~mv2.png/v1/fill/w_232,h_256,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a6e1f9_a68f7b61e2c442dc909c81e9f1336826~mv2.png&quot;);"></div>
+          <div class="char-card-name" id="select-name-p1b">Woody</div>
+        </div>
+      </div>
+
+      <button class="btn-start-menu" style="margin-top: 8px;" onclick="confirmSelectionAndStart()">🚀 COMENÇAR!</button>
+    </div>
+
+    <!-- HUD BARRA DE PROGRÉS (CAMÍ) -->
+    <div class="hud">
+      <div class="progress-hud-container">
+        <div class="progress-bar-wrapper">
+          <div class="hud-char-avatar" id="hud-avatar" style="background-image: url(&quot;https://static.wixstatic.com/media/a6e1f9_72a257079fc34ae69a4566a639687a20~mv2.png/v1/fill/w_208,h_254,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a6e1f9_72a257079fc34ae69a4566a639687a20~mv2.png&quot;);"></div>
+          <div class="health-bar-container">
+            <div class="health-bar" id="progress-bar" style="width: 40%;"></div>
+            <div class="progress-text" id="progress-text">PAS 4 / 10</div>
+          </div>
+          <div class="hud-gem-target" id="hud-gem-target">🎸</div>
+        </div>
+
+        <div class="timer-container">
+          <div class="hud-gems-bar" id="hud-gems-bar"><div class="hud-gem-slot current-target" title="Guitarra: En curs">🎸</div><div class="hud-gem-slot" title="Piano: Pendent">🎹</div><div class="hud-gem-slot" title="Bateria: Pendent">🥁</div><div class="hud-gem-slot" title="Trompeta: Pendent">🎺</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ESCENARI DE LA MUNTANYA -->
+    <div class="stage" id="stage-area">
+      <div class="mountain-container" id="mountain-container">
+        <svg class="mountain-svg" viewBox="0 0 1000 600" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="mtnMainGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#64748b"></stop>
+              <stop offset="45%" stop-color="#475569"></stop>
+              <stop offset="85%" stop-color="#334155"></stop>
+              <stop offset="100%" stop-color="#1e293b"></stop>
+            </linearGradient>
+            <linearGradient id="mtnShadowGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#1e293b" stop-opacity="0.65"></stop>
+              <stop offset="100%" stop-color="#0f172a" stop-opacity="0.88"></stop>
+            </linearGradient>
+            <linearGradient id="snowGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffffff"></stop>
+              <stop offset="100%" stop-color="#cbd5e1"></stop>
+            </linearGradient>
+            <linearGradient id="meadowGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#22c55e"></stop>
+              <stop offset="100%" stop-color="#15803d"></stop>
+            </linearGradient>
+          </defs>
+
+          <!-- Núvols decoratius -->
+          <g class="mountain-cloud" opacity="0.8">
+            <ellipse cx="180" cy="110" rx="45" ry="18" fill="#f8fafc"></ellipse>
+            <ellipse cx="215" cy="105" rx="35" ry="20" fill="#f8fafc"></ellipse>
+            <ellipse cx="145" cy="112" rx="30" ry="15" fill="#f8fafc"></ellipse>
+          </g>
+          <g class="mountain-cloud cloud-2" opacity="0.7">
+            <ellipse cx="830" cy="130" rx="50" ry="18" fill="#f8fafc"></ellipse>
+            <ellipse cx="865" cy="124" rx="34" ry="20" fill="#f8fafc"></ellipse>
+            <ellipse cx="795" cy="133" rx="28" ry="14" fill="#f8fafc"></ellipse>
+          </g>
+
+          <!-- Muntanyes llunyanes de fons -->
+          <polygon points="0,565 210,275 430,565" fill="#1e293b" opacity="0.85"></polygon>
+          <polygon points="560,565 810,255 1000,565" fill="#1e293b" opacity="0.85"></polygon>
+
+          <!-- Muntanya principal -->
+          <polygon points="10,565 650,90 990,565" fill="url(#mtnMainGrad)" stroke="#0f172a" stroke-width="4" stroke-linejoin="round"></polygon>
+          <polygon points="650,90 790,565 990,565" fill="url(#mtnShadowGrad)"></polygon>
+
+          <!-- Cim nevat -->
+          <polygon points="650,90 547,232 588,215 620,245 650,218 682,248 712,216 749,228" fill="url(#snowGrad)"></polygon>
+
+          <!-- Prat base -->
+          <rect x="0" y="555" width="1000" height="45" rx="14" fill="url(#meadowGrad)" stroke="#14532d" stroke-width="3"></rect>
+
+          <!-- Pins a la falda de la muntanya -->
+          <g transform="translate(80, 525)">
+            <polygon points="15,0 0,32 30,32" fill="#166534"></polygon>
+            <polygon points="15,-14 3,14 27,14" fill="#15803d"></polygon>
+          </g>
+          <g transform="translate(120, 532)">
+            <polygon points="12,0 0,26 24,26" fill="#14532d"></polygon>
+            <polygon points="12,-11 2,11 22,11" fill="#166534"></polygon>
+          </g>
+          <g transform="translate(870, 526)">
+            <polygon points="15,0 0,32 30,32" fill="#166534"></polygon>
+            <polygon points="15,-14 3,14 27,14" fill="#15803d"></polygon>
+          </g>
+
+          <!-- Sender en ziga-zaga -->
+          <polyline points="160,545 340,495 520,445 350,395 440,345 620,295 490,250 560,205 680,165 620,130 650,90" fill="none" stroke="#78350f" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"></polyline>
+          <polyline id="mountain-trail-line" points="160,545 340,495 520,445 350,395 440,345 620,295 490,250 560,205 680,165 620,130 650,90" fill="none" stroke="#fbbf24" stroke-width="6" stroke-dasharray="12 10" stroke-linecap="round" stroke-linejoin="round"></polyline>
+        </svg>
+
+        <!-- Fites de pas i personatge escalador -->
+        <div class="character-runner" id="char-p1" style="background-image: url(&quot;https://static.wixstatic.com/media/a6e1f9_72a257079fc34ae69a4566a639687a20~mv2.png/v1/fill/w_208,h_254,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a6e1f9_72a257079fc34ae69a4566a639687a20~mv2.png&quot;); left: 44%; top: 57.5%;"></div>
+        <div class="gem-destination" id="stage-gem-target" style="left: 65%; top: 7.5%;">🎸</div>
+      <div class="path-node reached" id="path-node-0" style="left: 16%; top: 90.8%;">0</div><div class="path-node reached" id="path-node-1" style="left: 34%; top: 82.5%;">1</div><div class="path-node reached" id="path-node-2" style="left: 52%; top: 74.2%;">2</div><div class="path-node reached" id="path-node-3" style="left: 35%; top: 65.8%;">3</div><div class="path-node reached" id="path-node-4" style="left: 44%; top: 57.5%;">4</div><div class="path-node" id="path-node-5" style="left: 62%; top: 49.2%;">5</div><div class="path-node" id="path-node-6" style="left: 49%; top: 41.7%;">6</div><div class="path-node" id="path-node-7" style="left: 56%; top: 34.2%;">7</div><div class="path-node" id="path-node-8" style="left: 68%; top: 27.5%;">8</div><div class="path-node" id="path-node-9" style="left: 62%; top: 21.7%;">9</div><div class="path-node summit-node" id="path-node-10" style="left: 65%; top: 15%;">🚩</div></div>
+    </div>
+
+    <!-- MODAL POP-UP PREGUNTA -->
+    <div class="modal-overlay" id="quiz-modal" style="display: none;">
+      <div class="modal-quiz">
+        <div class="quiz-timer-bar-container" id="quiz-timer-container" style="display: none;">
+          <div class="quiz-timer-bar" id="quiz-timer-bar"></div>
+          <div class="quiz-timer-text" id="quiz-timer-text">15s</div>
+        </div>
+
+        <div class="question-title" id="quiz-question">Sol solet – Greu</div>
+
+        <div class="quiz-image-container" id="quiz-img-container" style="display: none;">
+          <img id="quiz-image" class="quiz-image" src="" alt="Imatge del so">
+        </div>
+
+        <!-- BOTÓ DALT DE L'ÀUDIO: FLETXA CAP A DALT + TEXT "Agut" -->
+        <button type="button" class="pitch-choice-btn btn-agut" id="btn-choice-agut" onclick="selectPitchAnswer('agut')">
+          <svg class="pitch-arrow-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M32 6L56 32H41V58H23V32H8L32 6Z" fill="#FFCC00" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round"></path>
+          </svg>
+          <span>Agut</span>
+        </button>
+
+        <!-- REPRODUCTOR D'ÀUDIO AUTOMÀTIC AL MIG -->
+        <div class="quiz-audio-container" id="quiz-audio-container">
+          <div class="audio-wave-indicator" id="audio-status-text">🔊 S'està reproduint el so...</div>
+          <button type="button" class="btn-replay-audio" onclick="replayCurrentQuestionAudio()">
+            <span>🔁</span>
+            <span>Tornar a escoltar</span>
+          </button>
+          <audio id="quiz-audio-player" class="quiz-audio-player" controls="" autoplay="" src="" style="display: block;"></audio>
+        </div>
+
+        <!-- BOTÓ PART DE BAIX DE LA PREGUNTA: DIBUIX FLETXA CAP A BAIX + TEXT "Greu" -->
+        <button type="button" class="pitch-choice-btn btn-greu" id="btn-choice-greu" onclick="selectPitchAnswer('greu')">
+          <svg class="pitch-arrow-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M32 58L8 32H23V6H41V32H56L32 58Z" fill="#FFCC00" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round"></path>
+          </svg>
+          <span>Greu</span>
+        </button>
+
+        <div class="feedback-msg" id="feedback-msg" style="display: none;"></div>
+      </div>
+    </div>
+
+    <!-- PANTALLA DE RESULTATS FINALS -->
+    <div class="results-screen" id="results-screen" style="display: none;">
+      <div class="results-card">
+        <div class="results-title" id="results-title">MOLT BÉ!</div>
+        
+        <div class="gem-unlocked-banner" id="gem-unlocked-banner">
+          <span style="font-size: 2rem;" id="banner-gem-icon">🎸</span>
+          <span id="banner-gem-text">Has aconseguit la Guitarra!</span>
+        </div>
+
+        <div class="stats-grid">
+          <div>🎯 Encerts: <b id="stat-correct" style="color: #22c55e;">0</b></div>
+          <div>❌ Fallades: <b id="stat-wrong" style="color: #ef4444;">0</b></div>
+          <div>📊 Precisió: <b id="stat-accuracy" style="color: #38bdf8;">0%</b></div>
+          <div>⏱️ Temps Total: <b id="stat-time" style="color: #fff;">0s</b></div>
+        </div>
+        <button class="btn-action" onclick="exitToStartScreen()">🔄 TORNAR A L'INICI</button>
+      </div>
+    </div>
+
+    <!-- PANTALLA DE CELEBRACIÓ DELS 4 INSTRUMENTS -->
+    <div class="grand-celebration-screen" id="grand-celebration-screen" style="display: none;">
+      <div class="festive-decorations">
+        <span>🎉</span><span>🎈</span><span>✨</span>
+        <span>🎊</span><span>👑</span><span>⭐</span>
+      </div>
+      <div class="celebration-title">🏆 GRAN CAMPIÓ! 🏆</div>
+      <div class="celebration-subtitle" id="celebration-hero-name">ENHORABONA! HAS ACONSEGUIT ELS 4 INSTRUMENTS AL CIM!</div>
+      
+      <div class="celebration-hero-wrapper">
+        <div class="celebration-halo"></div>
+        <div class="celebration-character" id="celebration-hero-avatar"></div>
+      </div>
+
+      <div class="celebration-animals-bar">
+        <span>🎸</span><span>🎹</span><span>🥁</span><span>🎺</span>
+      </div>
+
+      <button class="btn-action" style="background: #eab308; color: #000; font-size: 1.15rem; padding: 15px 30px; box-shadow: 0 6px 0 #ca8a04; z-index: 10;" onclick="exitToStartScreen()">🔄 TORNAR A L'INICI</button>
+    </div>
+
+    <!-- MODAL ACCÉS CONFIGURACIÓ (PIN 4 XIFRES) -->
+    <div class="pin-modal" id="pin-modal" style="display: none;">
+      <div class="pin-card">
+        <h3 style="color: #ffcc00; font-size: 1rem;">🔒 ACCÉS RESTRINGIT</h3>
+        <p style="font-size: 0.8rem; color: #94a3b8;">Introdueix la contrasenya de 4 números per accedir a la configuració:</p>
+        <input type="password" maxlength="4" id="pin-input" class="form-control pin-input" placeholder="••••" onkeydown="if(event.key==='Enter') verifyPin()">
+        <p id="pin-error" style="color: #ef4444; font-size: 0.75rem; display: none;">Contrasenya incorrecta!</p>
+        <div style="display: flex; gap: 10px; width: 100%;">
+          <button class="btn-action" style="flex: 1;" onclick="verifyPin()">OK</button>
+          <button class="btn-action btn-close" style="flex: 1; margin-top: 0;" onclick="closePinModal()">CANCEL·LAR</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANELL DE CONFIGURACIÓ -->
+    <div class="config-modal" id="config-modal" style="display: flex;">
+      <div class="config-container">
+        <div class="config-tabs">
+          <button class="tab-btn active" onclick="switchTab(1)">1. DESAR/CARREGAR</button>
+          <button class="tab-btn" onclick="switchTab(2)">2. PERSONATGES</button>
+          <button class="tab-btn" onclick="switchTab(3)">3. SONS (AGUT/GREU)</button>
+          <button class="tab-btn" onclick="switchTab(4)">4. TEMPORITZADOR</button>
+        </div>
+
+        <div class="tab-content active" id="tab-1">
+          <div class="form-group" style="background: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #38bdf8; gap: 12px;">
+            <label style="color: #38bdf8; font-size: 0.95rem;">💾 Gestió de Fitxers de Configuració:</label>
+            <p style="font-size: 0.8rem; color: #94a3b8; line-height: 1.4;">Pots guardar tots els teus ajustos, àudios i personatges en un fitxer al teu ordinador o carregar un fitxer previ.</p>
+
+            <button class="btn-action" style="background: #8b5cf6;" onclick="exportAppHtml()">🌐 Descarregar App Completa en HTML (amb dades incloses)</button>
+
+            <button class="btn-action" style="background: #2563eb;" onclick="exportConfigJson()">📥 Descarregar Fitxer de Configuració (JSON)</button>
+            <div style="margin-top: 10px;">
+              <label style="font-size: 0.8rem; color: #ffcc00; display: block; margin-bottom: 5px;">Carregar fitxer JSON guardat:</label>
+              <input type="file" accept=".json" class="form-control" onchange="importConfigJson(event)">
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="tab-2">
+          <div class="form-group">
+            <label>Nom Personatge 1A:</label>
+            <input type="text" id="cfg-name-p1a" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Imatge Personatge 1A (URL o fitxer):</label>
+            <input type="text" id="cfg-img-p1a" class="form-control">
+            <input type="file" accept="image/*" onchange="uploadImg(event, 'cfg-img-p1a')">
+          </div>
+          <hr style="border-color: #334155; margin: 10px 0;">
+          <div class="form-group">
+            <label>Nom Personatge 1B (Segon Personatge):</label>
+            <input type="text" id="cfg-name-p1b" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Imatge Personatge 1B (URL o fitxer):</label>
+            <input type="text" id="cfg-img-p1b" class="form-control">
+            <input type="file" accept="image/*" onchange="uploadImg(event, 'cfg-img-p1b')">
+          </div>
+          <hr style="border-color: #334155; margin: 10px 0;">
+          <div class="form-group">
+            <label>Imatge de Fons Escenari (URL o fitxer):</label>
+            <input type="text" id="cfg-bg-img" class="form-control">
+            <input type="file" accept="image/*" onchange="uploadImg(event, 'cfg-bg-img')">
+          </div>
+        </div>
+
+        <div class="tab-content" id="tab-3">
+          <!-- APARTAT D'IMPORTACIÓ EN BLOC DES D'UN TEXT (COPIA I PEGA) -->
+          <div class="form-group" style="background: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #38bdf8;">
+            <label style="color: #38bdf8; font-size: 0.95rem;">📋 Importar Sons en Bloc (Copiar i Enganxar):</label>
+            <p style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 8px; line-height: 1.4;">
+              Escriu o enganxa una llista de sons separats per línies buides. Pots incloure opcionalment <code style="color: #fbbf24;">IMG: URL</code> i <code style="color: #fbbf24;">AUDIO: URL</code>[cite: 1].<br>
+              Exemple:<br>
+              <code style="color: #fbbf24;">So d'ocell petit<br>PITCH: agut<br>IMG: https://.../ocell.jpg<br>AUDIO: https://.../ocell.mp3</code>
+            </p>
+            <textarea id="bulk-import-text" class="form-control" placeholder="Escriu o enganxa ací les preguntes..."></textarea>
+            <button class="btn-action" style="margin-top: 10px; background: #0284c7;" onclick="importBulkQuestions()">📥 IMPORTAR LLISTAT DE SONS</button>
+          </div>
+
+          <hr style="border-color: #334155; margin: 5px 0;">
+
+          <div class="form-group" style="background: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #ffcc00;">
+            <label id="form-q-title" style="font-size: 1rem; color: #ffcc00; font-weight: bold;">Afegir o Modificar So (Agut / Greu):</label>
+            <input type="hidden" id="editing-q-index" value="-1">
+            
+            <div class="form-group" style="margin-top: 10px;">
+              <label>Títol o pista per al docent / nen (ex: "So de flauta" o "Com és aquest so?"):</label>
+              <input type="text" id="new-q-text" class="form-control" placeholder="Com és aquest so?">
+            </div>
+
+            <div class="form-group">
+              <label>Resposta correcta:</label>
+              <select id="new-q-pitch" class="form-control">
+                <option value="agut">⬆️ Agut</option>
+                <option value="greu">⬇️ Greu</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Àudio/So (URL o carregar fitxer MP3/WAV) *si el deixes buit, es generarà un so sintetitzat automàticament:</label>
+              <input type="text" id="new-q-audio" class="form-control" placeholder="http://...so.mp3 o selecciona fitxer">
+              <input type="file" accept="audio/*" onchange="uploadAudio(event, 'new-q-audio')">
+            </div>
+
+            <div class="form-group">
+              <label>Imatge d'acompanyament (URL o carregar fitxer) *opcional:</label>
+              <input type="text" id="new-q-img" class="form-control" placeholder="http://... o selecciona fitxer">
+              <input type="file" accept="image/*" onchange="uploadImg(event, 'new-q-img')">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+              <button class="btn-action" id="btn-save-question" style="flex: 2;" onclick="addOrUpdateQuestion()">+ AFEGIR SO</button>
+              <button class="btn-action btn-close" id="btn-cancel-edit" style="flex: 1; margin-top: 0; display: none;" onclick="resetQuestionForm()">CANCEL·LAR</button>
+            </div>
+          </div>
+
+          <label style="color: #ffcc00; font-size: 0.9rem; margin-top: 15px;">Llista de Sons Configurats:</label>
+          <div id="questions-list" style="display: flex; flex-direction: column; gap: 8px;"><div class="q-item">
+          <div class="q-item-info">
+            <span style="color: #fff; font-size: 0.95rem;"><b>#1</b> - Quan les oques van al camp – Agut</span>
+            <div style="display: flex; gap: 8px; font-size: 0.8rem; flex-wrap: wrap;">
+              <span style="color: #ffcc00; font-weight: bold;">⬆️ AGUT</span>
+              <span style="color: #38bdf8;">🎵 Àudio personalitzat</span>
+              
+            </div>
+          </div>
+          <div class="q-item-actions">
+            <button class="btn-edit-q" onclick="editQuestion(0)">✏️ Editar</button>
+            <button class="btn-delete-q" onclick="removeQuestion(0)">🗑️ Esborrar</button>
+          </div>
+        </div><div class="q-item">
+          <div class="q-item-info">
+            <span style="color: #fff; font-size: 0.95rem;"><b>#2</b> - Sol solet – Agut</span>
+            <div style="display: flex; gap: 8px; font-size: 0.8rem; flex-wrap: wrap;">
+              <span style="color: #ffcc00; font-weight: bold;">⬆️ AGUT</span>
+              <span style="color: #38bdf8;">🎵 Àudio personalitzat</span>
+              
+            </div>
+          </div>
+          <div class="q-item-actions">
+            <button class="btn-edit-q" onclick="editQuestion(1)">✏️ Editar</button>
+            <button class="btn-delete-q" onclick="removeQuestion(1)">🗑️ Esborrar</button>
+          </div>
+        </div><div class="q-item">
+          <div class="q-item-info">
+            <span style="color: #fff; font-size: 0.95rem;"><b>#3</b> - Els titelles – Greu</span>
+            <div style="display: flex; gap: 8px; font-size: 0.8rem; flex-wrap: wrap;">
+              <span style="color: #ffcc00; font-weight: bold;">⬇️ GREU</span>
+              <span style="color: #38bdf8;">🎵 Àudio personalitzat</span>
+              
+            </div>
+          </div>
+          <div class="q-item-actions">
+            <button class="btn-edit-q" onclick="editQuestion(2)">✏️ Editar</button>
+            <button class="btn-delete-q" onclick="removeQuestion(2)">🗑️ Esborrar</button>
+          </div>
+        </div><div class="q-item">
+          <div class="q-item-info">
+            <span style="color: #fff; font-size: 0.95rem;"><b>#4</b> - El lleó no em fa por – Greu</span>
+            <div style="display: flex; gap: 8px; font-size: 0.8rem; flex-wrap: wrap;">
+              <span style="color: #ffcc00; font-weight: bold;">⬇️ GREU</span>
+              <span style="color: #38bdf8;">🎵 Àudio personalitzat</span>
+              
+            </div>
+          </div>
+          <div class="q-item-actions">
+            <button class="btn-edit-q" onclick="editQuestion(3)">✏️ Editar</button>
+            <button class="btn-delete-q" onclick="removeQuestion(3)">🗑️ Esborrar</button>
+          </div>
+        </div><div class="q-item">
+          <div class="q-item-info">
+            <span style="color: #fff; font-size: 0.95rem;"><b>#5</b> - Sol solet – Greu</span>
+            <div style="display: flex; gap: 8px; font-size: 0.8rem; flex-wrap: wrap;">
+              <span style="color: #ffcc00; font-weight: bold;">⬇️ GREU</span>
+              <span style="color: #38bdf8;">🎵 Àudio personalitzat</span>
+              
+            </div>
+          </div>
+          <div class="q-item-actions">
+            <button class="btn-edit-q" onclick="editQuestion(4)">✏️ Editar</button>
+            <button class="btn-delete-q" onclick="removeQuestion(4)">🗑️ Esborrar</button>
+          </div>
+        </div><div class="q-item">
+          <div class="q-item-info">
+            <span style="color: #fff; font-size: 0.95rem;"><b>#6</b> - Plou i fa sol – Agut</span>
+            <div style="display: flex; gap: 8px; font-size: 0.8rem; flex-wrap: wrap;">
+              <span style="color: #ffcc00; font-weight: bold;">⬆️ AGUT</span>
+              <span style="color: #38bdf8;">🎵 Àudio personalitzat</span>
+              
+            </div>
+          </div>
+          <div class="q-item-actions">
+            <button class="btn-edit-q" onclick="editQuestion(5)">✏️ Editar</button>
+            <button class="btn-delete-q" onclick="removeQuestion(5)">🗑️ Esborrar</button>
+          </div>
+        </div><div class="q-item">
+          <div class="q-item-info">
+            <span style="color: #fff; font-size: 0.95rem;"><b>#7</b> - Nou pometes té el pomer – Greu</span>
+            <div style="display: flex; gap: 8px; font-size: 0.8rem; flex-wrap: wrap;">
+              <span style="color: #ffcc00; font-weight: bold;">⬇️ GREU</span>
+              <span style="color: #38bdf8;">🎵 Àudio personalitzat</span>
+              
+            </div>
+          </div>
+          <div class="q-item-actions">
+            <button class="btn-edit-q" onclick="editQuestion(6)">✏️ Editar</button>
+            <button class="btn-delete-q" onclick="removeQuestion(6)">🗑️ Esborrar</button>
+          </div>
+        </div><div class="q-item">
+          <div class="q-item-info">
+            <span style="color: #fff; font-size: 0.95rem;"><b>#8</b> - Nou pometes té el pomer – Agut</span>
+            <div style="display: flex; gap: 8px; font-size: 0.8rem; flex-wrap: wrap;">
+              <span style="color: #ffcc00; font-weight: bold;">⬆️ AGUT</span>
+              <span style="color: #38bdf8;">🎵 Àudio personalitzat</span>
+              
+            </div>
+          </div>
+          <div class="q-item-actions">
+            <button class="btn-edit-q" onclick="editQuestion(7)">✏️ Editar</button>
+            <button class="btn-delete-q" onclick="removeQuestion(7)">🗑️ Esborrar</button>
+          </div>
+        </div><div class="q-item">
+          <div class="q-item-info">
+            <span style="color: #fff; font-size: 0.95rem;"><b>#9</b> - Quan les oques van al camp – Greu</span>
+            <div style="display: flex; gap: 8px; font-size: 0.8rem; flex-wrap: wrap;">
+              <span style="color: #ffcc00; font-weight: bold;">⬇️ GREU</span>
+              <span style="color: #38bdf8;">🎵 Àudio personalitzat</span>
+              
+            </div>
+          </div>
+          <div class="q-item-actions">
+            <button class="btn-edit-q" onclick="editQuestion(8)">✏️ Editar</button>
+            <button class="btn-delete-q" onclick="removeQuestion(8)">🗑️ Esborrar</button>
+          </div>
+        </div><div class="q-item">
+          <div class="q-item-info">
+            <span style="color: #fff; font-size: 0.95rem;"><b>#10</b> - Plou i fa sol – Greu</span>
+            <div style="display: flex; gap: 8px; font-size: 0.8rem; flex-wrap: wrap;">
+              <span style="color: #ffcc00; font-weight: bold;">⬇️ GREU</span>
+              <span style="color: #38bdf8;">🎵 Àudio personalitzat</span>
+              
+            </div>
+          </div>
+          <div class="q-item-actions">
+            <button class="btn-edit-q" onclick="editQuestion(9)">✏️ Editar</button>
+            <button class="btn-delete-q" onclick="removeQuestion(9)">🗑️ Esborrar</button>
+          </div>
+        </div><div class="q-item">
+          <div class="q-item-info">
+            <span style="color: #fff; font-size: 0.95rem;"><b>#11</b> - Els titelles – Agut</span>
+            <div style="display: flex; gap: 8px; font-size: 0.8rem; flex-wrap: wrap;">
+              <span style="color: #ffcc00; font-weight: bold;">⬆️ AGUT</span>
+              <span style="color: #38bdf8;">🎵 Àudio personalitzat</span>
+              
+            </div>
+          </div>
+          <div class="q-item-actions">
+            <button class="btn-edit-q" onclick="editQuestion(10)">✏️ Editar</button>
+            <button class="btn-delete-q" onclick="removeQuestion(10)">🗑️ Esborrar</button>
+          </div>
+        </div><div class="q-item">
+          <div class="q-item-info">
+            <span style="color: #fff; font-size: 0.95rem;"><b>#12</b> - El gegant del pi – Greu</span>
+            <div style="display: flex; gap: 8px; font-size: 0.8rem; flex-wrap: wrap;">
+              <span style="color: #ffcc00; font-weight: bold;">⬇️ GREU</span>
+              <span style="color: #38bdf8;">🎵 Àudio personalitzat</span>
+              
+            </div>
+          </div>
+          <div class="q-item-actions">
+            <button class="btn-edit-q" onclick="editQuestion(11)">✏️ Editar</button>
+            <button class="btn-delete-q" onclick="removeQuestion(11)">🗑️ Esborrar</button>
+          </div>
+        </div><div class="q-item">
+          <div class="q-item-info">
+            <span style="color: #fff; font-size: 0.95rem;"><b>#13</b> - Pare Pere – Agut</span>
+            <div style="display: flex; gap: 8px; font-size: 0.8rem; flex-wrap: wrap;">
+              <span style="color: #ffcc00; font-weight: bold;">⬆️ AGUT</span>
+              <span style="color: #38bdf8;">🎵 Àudio personalitzat</span>
+              
+            </div>
+          </div>
+          <div class="q-item-actions">
+            <button class="btn-edit-q" onclick="editQuestion(12)">✏️ Editar</button>
+            <button class="btn-delete-q" onclick="removeQuestion(12)">🗑️ Esborrar</button>
+          </div>
+        </div><div class="q-item">
+          <div class="q-item-info">
+            <span style="color: #fff; font-size: 0.95rem;"><b>#14</b> - Pare Pere – Greu</span>
+            <div style="display: flex; gap: 8px; font-size: 0.8rem; flex-wrap: wrap;">
+              <span style="color: #ffcc00; font-weight: bold;">⬇️ GREU</span>
+              <span style="color: #38bdf8;">🎵 Àudio personalitzat</span>
+              
+            </div>
+          </div>
+          <div class="q-item-actions">
+            <button class="btn-edit-q" onclick="editQuestion(13)">✏️ Editar</button>
+            <button class="btn-delete-q" onclick="removeQuestion(13)">🗑️ Esborrar</button>
+          </div>
+        </div><div class="q-item">
+          <div class="q-item-info">
+            <span style="color: #fff; font-size: 0.95rem;"><b>#15</b> - El lleó no em fa por – Agut</span>
+            <div style="display: flex; gap: 8px; font-size: 0.8rem; flex-wrap: wrap;">
+              <span style="color: #ffcc00; font-weight: bold;">⬆️ AGUT</span>
+              <span style="color: #38bdf8;">🎵 Àudio personalitzat</span>
+              
+            </div>
+          </div>
+          <div class="q-item-actions">
+            <button class="btn-edit-q" onclick="editQuestion(14)">✏️ Editar</button>
+            <button class="btn-delete-q" onclick="removeQuestion(14)">🗑️ Esborrar</button>
+          </div>
+        </div><div class="q-item">
+          <div class="q-item-info">
+            <span style="color: #fff; font-size: 0.95rem;"><b>#16</b> - El gegant del pi - Agut</span>
+            <div style="display: flex; gap: 8px; font-size: 0.8rem; flex-wrap: wrap;">
+              <span style="color: #ffcc00; font-weight: bold;">⬆️ AGUT</span>
+              <span style="color: #38bdf8;">🎵 Àudio personalitzat</span>
+              
+            </div>
+          </div>
+          <div class="q-item-actions">
+            <button class="btn-edit-q" onclick="editQuestion(15)">✏️ Editar</button>
+            <button class="btn-delete-q" onclick="removeQuestion(15)">🗑️ Esborrar</button>
+          </div>
+        </div></div>
+        </div>
+
+        <div class="tab-content" id="tab-4">
+          <div class="form-group" style="background: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #38bdf8;">
+            <label style="color: #38bdf8; font-size: 0.95rem;">⏱️ Configuració del Temporitzador (Mode amb temps):</label>
+            <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 12px; line-height: 1.4;">Estableix el temps en segons que tindrà el nen/a per a respondre cada so.</p>
+            <label for="cfg-timer-seconds">Temps per pregunta (segons):</label>
+            <input type="number" id="cfg-timer-seconds" class="form-control" min="3" max="120" value="15">
+          </div>
+        </div>
+
+        <button class="btn-action" style="margin-top: 15px;" onclick="saveConfig()">GUARDAR I APLICAR</button>
+        <button class="btn-action btn-close" onclick="closeConfig()">CANCEL·LAR</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DADES DELS 4 INSTRUMENTS MUSICALS AL CIM
+    const GEM_TYPES = [
+      { id: 'inst_guitarra', name: 'Guitarra', icon: '🎸', color: '#ef4444' },
+      { id: 'inst_piano', name: 'Piano', icon: '🎹', color: '#3b82f6' },
+      { id: 'inst_bateria', name: 'Bateria', icon: '🥁', color: '#22c55e' },
+      { id: 'inst_trompeta', name: 'Trompeta', icon: '🎺', color: '#eab308' }
+    ];
+
+    const CONFIG_PIN = "0402";
+
+    const defaultState = {
+  "p1aName": "Jessie",
+  "p1aImg": "https://static.wixstatic.com/media/a6e1f9_72a257079fc34ae69a4566a639687a20~mv2.png/v1/fill/w_208,h_254,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a6e1f9_72a257079fc34ae69a4566a639687a20~mv2.png",
+  "p1bName": "Woody",
+  "p1bImg": "https://static.wixstatic.com/media/a6e1f9_a68f7b61e2c442dc909c81e9f1336826~mv2.png/v1/fill/w_232,h_256,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a6e1f9_a68f7b61e2c442dc909c81e9f1336826~mv2.png",
+  "bgImg": "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=1200&q=80",
+  "timerSeconds": 15,
+  "questions": [
+    {
+      "q": "Quan les oques van al camp – Agut",
+      "pitch": "agut",
+      "synthPreset": "bird",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Oques%20agut.mp3"
+    },
+    {
+      "q": "Sol solet – Agut",
+      "pitch": "agut",
+      "synthPreset": "bird",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Sol%20solet%20agut.mp3"
+    },
+    {
+      "q": "Els titelles – Greu",
+      "pitch": "greu",
+      "synthPreset": "drum",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Titelles%20Greu.mp3"
+    },
+    {
+      "q": "El lleó no em fa por – Greu",
+      "pitch": "greu",
+      "synthPreset": "drum",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Lleo%20Greu.mp3"
+    },
+    {
+      "q": "Sol solet – Greu",
+      "pitch": "greu",
+      "synthPreset": "drum",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Sol%20solet%20greu.mp3"
+    },
+    {
+      "q": "Plou i fa sol – Agut",
+      "pitch": "agut",
+      "synthPreset": "bird",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Bruixes%20agut.mp3"
+    },
+    {
+      "q": "Nou pometes té el pomer – Greu",
+      "pitch": "greu",
+      "synthPreset": "drum",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Pereta%20greu.mp3"
+    },
+    {
+      "q": "Nou pometes té el pomer – Agut",
+      "pitch": "agut",
+      "synthPreset": "bird",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Pereta%20agut.mp3"
+    },
+    {
+      "q": "Quan les oques van al camp – Greu",
+      "pitch": "greu",
+      "synthPreset": "drum",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Oques%20greu.mp3"
+    },
+    {
+      "q": "Plou i fa sol – Greu",
+      "pitch": "greu",
+      "synthPreset": "drum",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Bruixes%20greu.mp3"
+    },
+    {
+      "q": "Els titelles – Agut",
+      "pitch": "agut",
+      "synthPreset": "bird",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Titelles%20Agut.mp3"
+    },
+    {
+      "q": "El gegant del pi – Greu",
+      "pitch": "greu",
+      "synthPreset": "drum",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Gegant%20Greu.mp3"
+    },
+    {
+      "q": "Pare Pere – Agut",
+      "pitch": "agut",
+      "synthPreset": "bird",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Pare%20Pere%20-agut.mp3"
+    },
+    {
+      "q": "Pare Pere – Greu",
+      "pitch": "greu",
+      "synthPreset": "drum",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Pare%20Pere%20-greu.mp3"
+    },
+    {
+      "q": "El lleó no em fa por – Agut",
+      "pitch": "agut",
+      "synthPreset": "bird",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Lleo%20Agut.mp3"
+    },
+    {
+      "q": "El gegant del pi - Agut",
+      "pitch": "agut",
+      "synthPreset": "bird",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Gegant%20Agut.mp3"
+    }
+  ]
+};
+
+    let state = {
+  "p1aName": "Jessie",
+  "p1aImg": "https://static.wixstatic.com/media/a6e1f9_72a257079fc34ae69a4566a639687a20~mv2.png/v1/fill/w_208,h_254,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a6e1f9_72a257079fc34ae69a4566a639687a20~mv2.png",
+  "p1bName": "Woody",
+  "p1bImg": "https://static.wixstatic.com/media/a6e1f9_a68f7b61e2c442dc909c81e9f1336826~mv2.png/v1/fill/w_232,h_256,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a6e1f9_a68f7b61e2c442dc909c81e9f1336826~mv2.png",
+  "bgImg": "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=1200&q=80",
+  "timerSeconds": 15,
+  "questions": [
+    {
+      "q": "Quan les oques van al camp – Agut",
+      "pitch": "agut",
+      "synthPreset": "bird",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Oques%20agut.mp3"
+    },
+    {
+      "q": "Sol solet – Agut",
+      "pitch": "agut",
+      "synthPreset": "bird",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Sol%20solet%20agut.mp3"
+    },
+    {
+      "q": "Els titelles – Greu",
+      "pitch": "greu",
+      "synthPreset": "drum",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Titelles%20Greu.mp3"
+    },
+    {
+      "q": "El lleó no em fa por – Greu",
+      "pitch": "greu",
+      "synthPreset": "drum",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Lleo%20Greu.mp3"
+    },
+    {
+      "q": "Sol solet – Greu",
+      "pitch": "greu",
+      "synthPreset": "drum",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Sol%20solet%20greu.mp3"
+    },
+    {
+      "q": "Plou i fa sol – Agut",
+      "pitch": "agut",
+      "synthPreset": "bird",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Bruixes%20agut.mp3"
+    },
+    {
+      "q": "Nou pometes té el pomer – Greu",
+      "pitch": "greu",
+      "synthPreset": "drum",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Pereta%20greu.mp3"
+    },
+    {
+      "q": "Nou pometes té el pomer – Agut",
+      "pitch": "agut",
+      "synthPreset": "bird",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Pereta%20agut.mp3"
+    },
+    {
+      "q": "Quan les oques van al camp – Greu",
+      "pitch": "greu",
+      "synthPreset": "drum",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Oques%20greu.mp3"
+    },
+    {
+      "q": "Plou i fa sol – Greu",
+      "pitch": "greu",
+      "synthPreset": "drum",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Bruixes%20greu.mp3"
+    },
+    {
+      "q": "Els titelles – Agut",
+      "pitch": "agut",
+      "synthPreset": "bird",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Titelles%20Agut.mp3"
+    },
+    {
+      "q": "El gegant del pi – Greu",
+      "pitch": "greu",
+      "synthPreset": "drum",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Gegant%20Greu.mp3"
+    },
+    {
+      "q": "Pare Pere – Agut",
+      "pitch": "agut",
+      "synthPreset": "bird",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Pare%20Pere%20-agut.mp3"
+    },
+    {
+      "q": "Pare Pere – Greu",
+      "pitch": "greu",
+      "synthPreset": "drum",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Pare%20Pere%20-greu.mp3"
+    },
+    {
+      "q": "El lleó no em fa por – Agut",
+      "pitch": "agut",
+      "synthPreset": "bird",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Lleo%20Agut.mp3"
+    },
+    {
+      "q": "El gegant del pi - Agut",
+      "pitch": "agut",
+      "synthPreset": "bird",
+      "img": "",
+      "audio": "https://file.garden/avDAN2VFP-A3veBw/Altura/Gegant%20Agut.mp3"
+    }
+  ]
+};
+    if (!state.timerSeconds) state.timerSeconds = 15;
+    let unlockedGems = [];
+
+    let selectedGemId = null;
+    let selectedPlayerOption = 1;
+    let selectedPlayerName = state.p1aName;
+    let selectedPlayerImg = state.p1aImg;
+    let useTimer = false;
+    let questionTimerInterval = null;
+    let timerTimeLeft = 0;
+    let celebrationMusicInterval = null;
+
+    const MOUNTAIN_PATH = [
+      { x: 16.0, y: 90.8 },
+      { x: 34.0, y: 82.5 },
+      { x: 52.0, y: 74.2 },
+      { x: 35.0, y: 65.8 },
+      { x: 44.0, y: 57.5 },
+      { x: 62.0, y: 49.2 },
+      { x: 49.0, y: 41.7 },
+      { x: 56.0, y: 34.2 },
+      { x: 68.0, y: 27.5 },
+      { x: 62.0, y: 21.7 },
+      { x: 65.0, y: 15.0 }
+    ];
+
+    const TOTAL_STEPS = 10;
+    let currentStep = 0;
+    let currentQIndex = 0;
+    let openedFromStartScreen = false;
+    let isProcessingAnswer = false;
+
+    let countCorrect = 0;
+    let countWrong = 0;
+    let matchStartTime = 0;
+
+    function checkPinAndOpenConfig() {
+      openedFromStartScreen = false;
+      showPinModal();
+    }
+
+    function openConfigFromStart() {
+      openedFromStartScreen = true;
+      showPinModal();
+    }
+
+    function showPinModal() {
+      document.getElementById('pin-input').value = '';
+      document.getElementById('pin-error').style.display = 'none';
+      document.getElementById('pin-modal').style.display = 'flex';
+      setTimeout(() => document.getElementById('pin-input').focus(), 100);
+    }
+
+    function closePinModal() {
+      document.getElementById('pin-modal').style.display = 'none';
+    }
+
+    function verifyPin() {
+      const input = document.getElementById('pin-input').value.trim();
+      if (input === CONFIG_PIN) {
+        closePinModal();
+        openConfig();
+      } else {
+        document.getElementById('pin-error').style.display = 'block';
+        document.getElementById('pin-input').value = '';
+        document.getElementById('pin-input').focus();
+      }
+    }
+
+    function initPathNodes() {
+      const container = document.getElementById('mountain-container');
+      const existingSteps = container.querySelectorAll('.path-node');
+      existingSteps.forEach(n => n.remove());
+
+      MOUNTAIN_PATH.forEach((pt, i) => {
+        const node = document.createElement('div');
+        node.className = 'path-node' + (i === TOTAL_STEPS ? ' summit-node' : '');
+        node.id = `path-node-${i}`;
+        node.innerText = i === TOTAL_STEPS ? '🚩' : i;
+        node.style.left = `${pt.x}%`;
+        node.style.top = `${pt.y}%`;
+        container.appendChild(node);
+      });
+
+      const summit = MOUNTAIN_PATH[TOTAL_STEPS];
+      const stageGem = document.getElementById('stage-gem-target');
+      stageGem.style.left = `${summit.x}%`;
+      stageGem.style.top = `${summit.y - 7.5}%`;
+    }
+
+    function triggerWinConfetti() {
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      }
+    }
+
+    function triggerAllGemsSuperCelebration() {
+      if (typeof confetti === 'function') {
+        const duration = 12 * 1000;
+        const animationEnd = Date.now() + duration;
+        const defaults = { startVelocity: 35, spread: 360, ticks: 80, zIndex: 400 };
+
+        function randomInRange(min, max) {
+          return Math.random() * (max - min) + min;
+        }
+
+        const interval = setInterval(function() {
+          const timeLeft = animationEnd - Date.now();
+          if (timeLeft <= 0) return clearInterval(interval);
+          const particleCount = 60 * (timeLeft / duration);
+          confetti(Object.assign({}, defaults, { 
+            particleCount, 
+            origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+            colors: ['#ffcc00', '#22c55e', '#38bdf8', '#ef4444', '#ec4899', '#a855f7']
+          }));
+          confetti(Object.assign({}, defaults, { 
+            particleCount, 
+            origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+            colors: ['#ffcc00', '#22c55e', '#38bdf8', '#ef4444', '#ec4899', '#a855f7']
+          }));
+        }, 200);
+      }
+    }
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSynthesizedPitchSound(pitch, preset) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const now = audioCtx.currentTime;
+
+      if (pitch === 'agut') {
+        const freqs = preset === 'bird' ? [1318.5, 1568, 1760] :
+                      preset === 'bell' ? [1567.98, 2093.0] :
+                      [987.77, 1174.66, 1318.51];
+
+        freqs.forEach((f, i) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = preset === 'bell' ? 'sine' : 'triangle';
+          const t = now + i * 0.22;
+          osc.frequency.setValueAtTime(f, t);
+          if (preset === 'bird') {
+            osc.frequency.exponentialRampToValueAtTime(f * 1.25, t + 0.16);
+          }
+          gain.gain.setValueAtTime(0.01, t);
+          gain.gain.linearRampToValueAtTime(0.32, t + 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.38);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(t);
+          osc.stop(t + 0.4);
+        });
+      } else {
+        const freqs = preset === 'drum' ? [110, 92, 82] :
+                      preset === 'tuba' ? [98.0, 87.31] :
+                      [130.81, 110.0, 98.0];
+
+        freqs.forEach((f, i) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = preset === 'drum' ? 'sine' : 'sawtooth';
+          const t = now + i * 0.28;
+          osc.frequency.setValueAtTime(f, t);
+          if (preset === 'drum') {
+            osc.frequency.exponentialRampToValueAtTime(55, t + 0.25);
+          }
+          gain.gain.setValueAtTime(0.01, t);
+          gain.gain.linearRampToValueAtTime(0.35, t + 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(t);
+          osc.stop(t + 0.48);
+        });
+      }
+    }
+
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+
+      if (type === 'step') {
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(320, now);
+        osc.frequency.exponentialRampToValueAtTime(640, now + 0.15);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.18);
+        osc.start(now);
+        osc.stop(now + 0.18);
+      } else if (type === 'step-back') {
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.exponentialRampToValueAtTime(90, now + 0.3);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      } else if (type === 'gem-collect') {
+        const now = audioCtx.currentTime;
+        const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+        notes.forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          const noteTime = now + (idx * 0.08);
+          osc.frequency.setValueAtTime(freq, noteTime);
+          gain.gain.setValueAtTime(0.2, noteTime);
+          gain.gain.linearRampToValueAtTime(0.01, noteTime + 0.4);
+          osc.start(noteTime);
+          osc.stop(noteTime + 0.4);
+        });
+      } else if (type === 'win') {
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.setValueAtTime(554.37, now + 0.15);
+        osc.frequency.setValueAtTime(659.25, now + 0.30);
+        osc.frequency.setValueAtTime(880, now + 0.45);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.8);
+        osc.start(now);
+        osc.stop(now + 0.8);
+      }
+    }
+
+    function startFestiveCelebrationMusic() {
+      stopFestiveCelebrationMusic();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+
+      const melody = [
+        { f: 523.25, d: 0.2 }, { f: 659.25, d: 0.2 }, { f: 783.99, d: 0.2 }, { f: 1046.50, d: 0.4 },
+        { f: 880.00, d: 0.2 }, { f: 1046.50, d: 0.6 },
+        { f: 698.46, d: 0.2 }, { f: 880.00, d: 0.2 }, { f: 1046.50, d: 0.2 }, { f: 1318.51, d: 0.4 },
+        { f: 1174.66, d: 0.2 }, { f: 1318.51, d: 0.6 }
+      ];
+
+      let step = 0;
+      celebrationMusicInterval = setInterval(() => {
+        const note = melody[step % melody.length];
+        const now = audioCtx.currentTime;
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = (step % 2 === 0) ? 'triangle' : 'sine';
+        osc.frequency.setValueAtTime(note.f, now);
+
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + note.d);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(now);
+        osc.stop(now + note.d);
+
+        step++;
+      }, 240);
+    }
+
+    function stopFestiveCelebrationMusic() {
+      if (celebrationMusicInterval) {
+        clearInterval(celebrationMusicInterval);
+        celebrationMusicInterval = null;
+      }
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') exitToStartScreen();
+    });
+
+    function renderGemsTracker() {
+      const container = document.getElementById('gems-tracker-grid');
+      container.innerHTML = '';
+      GEM_TYPES.forEach(gem => {
+        const isUnlocked = unlockedGems.includes(gem.id);
+        const item = document.createElement('div');
+        item.className = `gem-item ${isUnlocked ? 'unlocked' : ''}`;
+        item.innerHTML = `
+          <div class="gem-icon">${gem.icon}</div>
+          <div class="gem-name">${gem.name}</div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function renderHudGems() {
+      const hudBar = document.getElementById('hud-gems-bar');
+      hudBar.innerHTML = '';
+      GEM_TYPES.forEach(gem => {
+        const slot = document.createElement('div');
+        const isUnlocked = unlockedGems.includes(gem.id);
+        const isCurrentTarget = gem.id === selectedGemId;
+        slot.className = 'hud-gem-slot';
+        if (isUnlocked) slot.classList.add('unlocked');
+        else if (isCurrentTarget) slot.classList.add('current-target');
+        slot.title = `${gem.name}: ${isUnlocked ? 'Aconseguit' : (isCurrentTarget ? 'En curs' : 'Pendent')}`;
+        slot.innerText = gem.icon;
+        hudBar.appendChild(slot);
+      });
+    }
+
+    function resetGemsProgress() {
+      if (confirm("Vols reiniciar el progrés dels 4 instruments?")) {
+        unlockedGems = [];
+        localStorage.setItem('agut_greu_infantil_gems', JSON.stringify(unlockedGems));
+        renderGemsTracker();
+        renderHudGems();
+      }
+    }
+
+    function applyVisuals() {
+      document.getElementById('hud-avatar').style.backgroundImage = `url('${selectedPlayerImg}')`;
+      document.getElementById('char-p1').style.backgroundImage = `url('${selectedPlayerImg}')`;
+      document.getElementById('game-container').style.backgroundImage = `url('${state.bgImg}')`;
+      const activeGem = GEM_TYPES.find(g => g.id === selectedGemId) || GEM_TYPES[0];
+      document.getElementById('hud-gem-target').innerText = activeGem.icon;
+      const stageGem = document.getElementById('stage-gem-target');
+      stageGem.innerText = activeGem.icon;
+      stageGem.classList.remove('gem-collect-glow');
+      renderHudGems();
+    }
+
+    function spawnFloatingText(text, color) {
+      const el = document.createElement('div');
+      el.className = 'floating-text';
+      el.innerText = text;
+      el.style.color = color;
+      el.style.left = '42%';
+      document.getElementById('stage-area').appendChild(el);
+      setTimeout(() => el.remove(), 1800);
+    }
+
+    function openCharSelect(enableTimer) {
+      useTimer = !!enableTimer;
+      document.getElementById('start-screen').style.display = 'none';
+      document.getElementById('btn-exit-game').style.display = 'block';
+
+      const gemContainer = document.getElementById('gem-select-container');
+      gemContainer.innerHTML = '';
+      let firstAvailableGem = null;
+
+      GEM_TYPES.forEach(gem => {
+        const isUnlocked = unlockedGems.includes(gem.id);
+        const card = document.createElement('div');
+        card.className = `gem-select-card ${isUnlocked ? 'already-unlocked' : ''}`;
+        card.innerHTML = `
+          <div style="font-size: 2.2rem;">${gem.icon}</div>
+          <div style="font-size: 0.85rem; color: #fff; font-weight: bold;">${gem.name}</div>
+          <div style="font-size: 0.7rem; color: ${isUnlocked ? '#22c55e' : '#ffcc00'}; font-weight: bold;">
+            ${isUnlocked ? 'ACONSEGUIT 🏆' : 'PENDENT 🔒'}
+          </div>
+        `;
+        if (!isUnlocked && !firstAvailableGem) firstAvailableGem = gem.id;
+        if (!isUnlocked) card.onclick = () => selectGem(gem.id);
+        gemContainer.appendChild(card);
+      });
+
+      selectedGemId = firstAvailableGem || GEM_TYPES[0].id;
+      highlightSelectedGem();
+
+      document.getElementById('select-name-p1a').innerText = state.p1aName;
+      document.getElementById('select-avatar-p1a').style.backgroundImage = `url('${state.p1aImg}')`;
+      document.getElementById('select-name-p1b').innerText = state.p1bName;
+      document.getElementById('select-avatar-p1b').style.backgroundImage = `url('${state.p1bImg}')`;
+
+      selectFighter(1);
+      document.getElementById('char-select-screen').style.display = 'flex';
+    }
+
+    function selectGem(gemId) {
+      selectedGemId = gemId;
+      highlightSelectedGem();
+    }
+
+    function highlightSelectedGem() {
+      const cards = document.querySelectorAll('.gem-select-card');
+      GEM_TYPES.forEach((gem, idx) => {
+        if (cards[idx]) {
+          if (gem.id === selectedGemId) cards[idx].classList.add('selected');
+          else cards[idx].classList.remove('selected');
+        }
+      });
+    }
+
+    function selectFighter(option) {
+      selectedPlayerOption = option;
+      if (option === 1) {
+        selectedPlayerName = state.p1aName;
+        selectedPlayerImg = state.p1aImg;
+        document.getElementById('card-p1a').classList.add('selected');
+        document.getElementById('card-p1b').classList.remove('selected');
+      } else {
+        selectedPlayerName = state.p1bName;
+        selectedPlayerImg = state.p1bImg;
+        document.getElementById('card-p1b').classList.add('selected');
+        document.getElementById('card-p1a').classList.remove('selected');
+      }
+    }
+
+    function confirmSelectionAndStart() {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      document.getElementById('char-select-screen').style.display = 'none';
+      startGame();
+    }
+
+    function startGame() {
+      document.getElementById('btn-main-config').style.display = 'none';
+      document.getElementById('btn-exit-game').style.display = 'none';
+      document.getElementById('results-screen').style.display = 'none';
+      document.getElementById('grand-celebration-screen').style.display = 'none';
+      stopFestiveCelebrationMusic();
+      
+      initPathNodes();
+      applyVisuals();
+
+      currentStep = 0;
+      countCorrect = 0;
+      countWrong = 0;
+      matchStartTime = Date.now();
+      
+      updateProgressVisuals();
+
+      state.questions.sort(() => Math.random() - 0.5);
+      currentQIndex = 0;
+
+      showQuestion();
+    }
+
+    function stopQuizAudio() {
+      const audioPlayer = document.getElementById('quiz-audio-player');
+      audioPlayer.pause();
+      audioPlayer.currentTime = 0;
+      audioPlayer.src = "";
+    }
+
+    function stopQuestionTimer() {
+      if (questionTimerInterval) {
+        clearInterval(questionTimerInterval);
+        questionTimerInterval = null;
+      }
+    }
+
+    function startQuestionTimer() {
+      stopQuestionTimer();
+      const timerContainer = document.getElementById('quiz-timer-container');
+      const timerBar = document.getElementById('quiz-timer-bar');
+      const timerText = document.getElementById('quiz-timer-text');
+
+      if (!useTimer) {
+        timerContainer.style.display = 'none';
+        return;
+      }
+
+      timerContainer.style.display = 'block';
+      const maxSeconds = state.timerSeconds || 15;
+      timerTimeLeft = maxSeconds;
+      timerBar.style.width = '100%';
+      timerText.innerText = `${timerTimeLeft}s`;
+
+      const startTime = Date.now();
+      const durationMs = maxSeconds * 1000;
+
+      questionTimerInterval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, durationMs - elapsed);
+        const percent = (remaining / durationMs) * 100;
+        const secondsLeft = Math.ceil(remaining / 1000);
+
+        timerBar.style.width = percent + '%';
+        timerText.innerText = `${secondsLeft}s`;
+
+        if (remaining <= 0) {
+          stopQuestionTimer();
+          if (!isProcessingAnswer) {
+            selectPitchAnswer(null, true);
+          }
+        }
+      }, 100);
+    }
+
+    function exitToStartScreen() {
+      stopQuestionTimer();
+      stopQuizAudio();
+      stopFestiveCelebrationMusic();
+      document.getElementById('quiz-modal').style.display = 'none';
+      document.getElementById('config-modal').style.display = 'none';
+      document.getElementById('pin-modal').style.display = 'none';
+      document.getElementById('results-screen').style.display = 'none';
+      document.getElementById('char-select-screen').style.display = 'none';
+      document.getElementById('grand-celebration-screen').style.display = 'none';
+      
+      renderGemsTracker();
+      document.getElementById('start-screen').style.display = 'flex';
+      document.getElementById('btn-main-config').style.display = 'block';
+      document.getElementById('btn-exit-game').style.display = 'block';
+    }
+
+    function updateProgressVisuals() {
+      const percentage = (currentStep / TOTAL_STEPS) * 100;
+      document.getElementById('progress-bar').style.width = percentage + '%';
+      document.getElementById('progress-text').innerText = `PAS ${currentStep} / ${TOTAL_STEPS}`;
+
+      const runner = document.getElementById('char-p1');
+      const pt = MOUNTAIN_PATH[currentStep] || MOUNTAIN_PATH[0];
+      
+      runner.style.left = `${pt.x}%`;
+      runner.style.top = `${pt.y}%`;
+
+      for (let i = 0; i <= TOTAL_STEPS; i++) {
+        const node = document.getElementById(`path-node-${i}`);
+        if (node) {
+          if (i <= currentStep) node.classList.add('reached');
+          else node.classList.remove('reached');
+        }
+      }
+    }
+
+    function playCurrentQuestionAudio() {
+      const qData = state.questions[currentQIndex];
+      if (!qData) return;
+
+      const audioPlayer = document.getElementById('quiz-audio-player');
+      const statusText = document.getElementById('audio-status-text');
+
+      if (qData.audio && qData.audio.trim() !== "") {
+        audioPlayer.style.display = 'block';
+        audioPlayer.src = qData.audio;
+        audioPlayer.currentTime = 0;
+        statusText.innerText = "🔊 S'està reproduint el so...";
+        const playPromise = audioPlayer.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            statusText.innerText = "👆 Prem 'Tornar a escoltar' per sentir el so";
+          });
+        }
+      } else {
+        audioPlayer.style.display = 'none';
+        audioPlayer.src = "";
+        statusText.innerText = "🔊 Escolta el so musical...";
+        playSynthesizedPitchSound(qData.pitch || 'agut', qData.synthPreset || 'bird');
+      }
+    }
+
+    function replayCurrentQuestionAudio() {
+      playCurrentQuestionAudio();
+    }
+
+    function showQuestion() {
+      if (currentStep >= TOTAL_STEPS) return;
+
+      isProcessingAnswer = false;
+      document.getElementById('feedback-msg').style.display = 'none';
+
+      const btnAgut = document.getElementById('btn-choice-agut');
+      const btnGreu = document.getElementById('btn-choice-greu');
+      btnAgut.classList.remove('correct-feedback', 'wrong-feedback');
+      btnGreu.classList.remove('correct-feedback', 'wrong-feedback');
+
+      if (currentQIndex >= state.questions.length) {
+        state.questions.sort(() => Math.random() - 0.5);
+        currentQIndex = 0;
+      }
+
+      const qData = state.questions[currentQIndex];
+      document.getElementById('quiz-question').innerText = qData.q || "Com és aquest so?";
+
+      const imgContainer = document.getElementById('quiz-img-container');
+      const imgEl = document.getElementById('quiz-image');
+      if (qData.img && qData.img.trim() !== "") {
+        imgEl.src = qData.img;
+        imgContainer.style.display = 'flex';
+      } else {
+        imgContainer.style.display = 'none';
+        imgEl.src = "";
+      }
+
+      document.getElementById('quiz-modal').style.display = 'flex';
+
+      setTimeout(() => {
+        playCurrentQuestionAudio();
+      }, 250);
+
+      startQuestionTimer();
+    }
+
+    function selectPitchAnswer(chosenPitch, isTimeout = false) {
+      if (isProcessingAnswer) return;
+      isProcessingAnswer = true;
+      stopQuestionTimer();
+      stopQuizAudio();
+
+      const runner = document.getElementById('char-p1');
+      const qData = state.questions[currentQIndex];
+      const correctPitch = (qData.pitch || 'agut').toLowerCase();
+      const isCorrect = !isTimeout && (chosenPitch === correctPitch);
+
+      const btnAgut = document.getElementById('btn-choice-agut');
+      const btnGreu = document.getElementById('btn-choice-greu');
+
+      if (correctPitch === 'agut') {
+        btnAgut.classList.add('correct-feedback');
+        if (chosenPitch === 'greu') btnGreu.classList.add('wrong-feedback');
+      } else {
+        btnGreu.classList.add('correct-feedback');
+        if (chosenPitch === 'agut') btnAgut.classList.add('wrong-feedback');
+      }
+
+      if (!isCorrect) {
+        const feedbackEl = document.getElementById('feedback-msg');
+        feedbackEl.innerText = isTimeout
+          ? "⏰ S'HA ACABAT EL TEMPS!"
+          : (correctPitch === 'agut' ? "⬆️ ERA UN SO AGUT!" : "⬇️ ERA UN SO GREU!");
+        feedbackEl.style.display = 'block';
+      }
+
+      setTimeout(() => {
+        document.getElementById('quiz-modal').style.display = 'none';
+
+        if (isCorrect) {
+          countCorrect++;
+          currentStep = Math.min(TOTAL_STEPS, currentStep + 1);
+          
+          playSound('step');
+          runner.classList.remove('jump-walk', 'shake-red');
+          void runner.offsetWidth;
+          runner.classList.add('jump-walk');
+
+          spawnFloatingText(`MOLT BÉ! +1 PAS ⛰️`, '#22c55e');
+          updateProgressVisuals();
+
+          setTimeout(() => {
+            runner.classList.remove('jump-walk');
+            checkEndOrNext();
+          }, 900);
+
+        } else {
+          countWrong++;
+          currentStep = Math.max(0, currentStep - 1);
+
+          playSound('step-back');
+          runner.classList.remove('jump-walk', 'shake-red');
+          void runner.offsetWidth;
+          runner.classList.add('shake-red');
+
+          spawnFloatingText(isTimeout ? `TEMPS AGOTAT! -1 PAS 🔙` : `TORNA-HO A PROVAR! -1 PAS 🔙`, '#ef4444');
+          updateProgressVisuals();
+
+          setTimeout(() => {
+            runner.classList.remove('shake-red');
+            checkEndOrNext();
+          }, 900);
+        }
+      }, isCorrect ? 950 : 1650);
+    }
+
+    function checkEndOrNext() {
+      if (currentStep >= TOTAL_STEPS) {
+        const stageGem = document.getElementById('stage-gem-target');
+        const runner = document.getElementById('char-p1');
+
+        playSound('gem-collect');
+        stageGem.classList.add('gem-collect-glow');
+        runner.classList.add('jump-walk');
+
+        setTimeout(() => {
+          playSound('win');
+          showFinalResults(true);
+        }, 1400);
+      } else {
+        currentQIndex++;
+        setTimeout(showQuestion, 1300);
+      }
+    }
+
+    function showGrandCelebrationScreen() {
+      document.getElementById('results-screen').style.display = 'none';
+      
+      document.getElementById('celebration-hero-name').innerText = `🌟 ENHORABONA, ${selectedPlayerName.toUpperCase()}! 🌟\nHAS ACONSEGUIT ELS 4 INSTRUMENTS AL CIM!`;
+      document.getElementById('celebration-hero-avatar').style.backgroundImage = `url('${selectedPlayerImg}')`;
+      
+      document.getElementById('grand-celebration-screen').style.display = 'flex';
+
+      startFestiveCelebrationMusic();
+      triggerAllGemsSuperCelebration();
+    }
+
+    function showFinalResults(isWin) {
+      document.getElementById('btn-exit-game').style.display = 'block';
+      const titleEl = document.getElementById('results-title');
+      const bannerEl = document.getElementById('gem-unlocked-banner');
+      const totalTime = Math.round((Date.now() - matchStartTime) / 1000);
+      const totalQuestions = countCorrect + countWrong;
+      const accuracy = totalQuestions > 0 ? Math.round((countCorrect / totalQuestions) * 100) : 0;
+
+      const activeGem = GEM_TYPES.find(g => g.id === selectedGemId) || GEM_TYPES[0];
+
+      if (isWin) {
+        titleEl.innerText = `🏆 MOLT BÉ, ${selectedPlayerName}!`;
+        titleEl.className = 'results-title win';
+        
+        triggerWinConfetti();
+
+        if (!unlockedGems.includes(selectedGemId)) {
+          unlockedGems.push(selectedGemId);
+          localStorage.setItem('agut_greu_infantil_gems', JSON.stringify(unlockedGems));
+        }
+
+        document.getElementById('banner-gem-icon').innerText = activeGem.icon;
+        
+        if (unlockedGems.length === 4) {
+          setTimeout(showGrandCelebrationScreen, 1200);
+          return;
+        } else {
+          document.getElementById('banner-gem-text').innerText = `Has aconseguit la/el ${activeGem.name}! (${unlockedGems.length}/4)`;
+        }
+        
+        bannerEl.style.display = 'flex';
+      } else {
+        titleEl.innerText = `TORNA-HO A INTENTAR!`;
+        titleEl.className = 'results-title lose';
+        bannerEl.style.display = 'none';
+      }
+
+      document.getElementById('stat-correct').innerText = countCorrect;
+      document.getElementById('stat-wrong').innerText = countWrong;
+      document.getElementById('stat-accuracy').innerText = `${accuracy}%`;
+      document.getElementById('stat-time').innerText = `${totalTime}s`;
+
+      document.getElementById('results-screen').style.display = 'flex';
+    }
+
+    function switchTab(tabIdx) {
+      document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', idx === tabIdx - 1);
+      });
+      document.querySelectorAll('.tab-content').forEach((content, idx) => {
+        content.classList.toggle('active', idx === tabIdx - 1);
+      });
+    }
+
+    function openConfig() {
+      stopQuestionTimer();
+      stopQuizAudio();
+      stopFestiveCelebrationMusic();
+      document.getElementById('quiz-modal').style.display = 'none';
+
+      document.getElementById('cfg-name-p1a').value = state.p1aName;
+      document.getElementById('cfg-img-p1a').value = state.p1aImg;
+      document.getElementById('cfg-name-p1b').value = state.p1bName;
+      document.getElementById('cfg-img-p1b').value = state.p1bImg;
+      document.getElementById('cfg-bg-img').value = state.bgImg;
+      document.getElementById('cfg-timer-seconds').value = state.timerSeconds || 15;
+
+      switchTab(1);
+      resetQuestionForm();
+      renderQuestionsList();
+      document.getElementById('config-modal').style.display = 'flex';
+    }
+
+    function closeConfig() {
+      document.getElementById('config-modal').style.display = 'none';
+      if (openedFromStartScreen) {
+        openedFromStartScreen = false;
+        document.getElementById('start-screen').style.display = 'flex';
+      } else if (document.getElementById('start-screen').style.display !== 'flex') {
+        showQuestion();
+      }
+    }
+
+    function exportConfigJson() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "agut_o_greu_config.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function exportAppHtml() {
+      const currentFullState = {
+        p1aName: document.getElementById('cfg-name-p1a').value.trim() || state.p1aName,
+        p1aImg: document.getElementById('cfg-img-p1a').value.trim() || state.p1aImg,
+        p1bName: document.getElementById('cfg-name-p1b').value.trim() || state.p1bName,
+        p1bImg: document.getElementById('cfg-img-p1b').value.trim() || state.p1bImg,
+        bgImg: document.getElementById('cfg-bg-img').value.trim() || state.bgImg,
+        timerSeconds: parseInt(document.getElementById('cfg-timer-seconds').value) || 15,
+        questions: state.questions
+      };
+
+      let htmlSource = document.documentElement.outerHTML;
+
+      const stateJson = JSON.stringify(currentFullState, null, 2);
+      const gemsJson = JSON.stringify(unlockedGems, null, 2);
+
+      htmlSource = htmlSource.replace(
+        /const defaultState = \{[\s\S]*?\};/,
+        `const defaultState = ${stateJson};`
+      );
+
+      htmlSource = htmlSource.replace(
+        /let state = JSON\.parse\(localStorage\.getItem\('agut_greu_infantil_cfg'\)\) \|\| defaultState;/,
+        `let state = ${stateJson};`
+      );
+
+      htmlSource = htmlSource.replace(
+        /let unlockedGems = JSON\.parse\(localStorage\.getItem\('agut_greu_infantil_gems'\)\) \|\| \[\];/,
+        `let unlockedGems = ${gemsJson};`
+      );
+
+      htmlSource = htmlSource.replace(
+        /window\.onload = \(\) => \{[\s\S]*?\};/,
+        `window.onload = () => {
+          document.getElementById('config-modal').style.display = 'none';
+          document.getElementById('pin-modal').style.display = 'none';
+          document.getElementById('quiz-modal').style.display = 'none';
+          document.getElementById('results-screen').style.display = 'none';
+          document.getElementById('char-select-screen').style.display = 'none';
+          document.getElementById('grand-celebration-screen').style.display = 'none';
+          document.getElementById('start-screen').style.display = 'flex';
+          document.getElementById('btn-main-config').style.display = 'block';
+          document.getElementById('btn-exit-game').style.display = 'block';
+          renderGemsTracker();
+          applyVisuals();
+        };`
+      );
+
+      const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' });
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.href = URL.createObjectURL(blob);
+      downloadAnchor.download = "AgutOGreu_Infantil_AmbDades.html";
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function importConfigJson(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (imported && imported.questions) {
+            state = imported;
+            if (!state.timerSeconds) state.timerSeconds = 15;
+            localStorage.setItem('agut_greu_infantil_cfg', JSON.stringify(state));
+            applyVisuals();
+            openConfig();
+            alert("Configuració carregada correctament des del fitxer!");
+          } else {
+            alert("El format del fitxer JSON no és vàlid.");
+          }
+        } catch (err) {
+          alert("Error al llegir el fitxer JSON.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function uploadImg(event, targetId) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.getElementById(targetId).value = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function uploadAudio(event, targetId) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.getElementById(targetId).value = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function renderQuestionsList() {
+      const container = document.getElementById('questions-list');
+      container.innerHTML = '';
+      
+      if (state.questions.length === 0) {
+        container.innerHTML = '<p style="color: #94a3b8; font-size: 0.85rem; text-align: center; padding: 10px;">No hi ha cap so configurat.</p>';
+        return;
+      }
+
+      state.questions.forEach((q, idx) => {
+        const hasImg = q.img && q.img.trim() !== "";
+        const hasAudio = q.audio && q.audio.trim() !== "";
+        const pitchLabel = (q.pitch === 'greu') ? '⬇️ GREU' : '⬆️ AGUT';
+        
+        const div = document.createElement('div');
+        div.className = 'q-item';
+        div.innerHTML = `
+          <div class="q-item-info">
+            <span style="color: #fff; font-size: 0.95rem;"><b>#${idx + 1}</b> - ${q.q}</span>
+            <div style="display: flex; gap: 8px; font-size: 0.8rem; flex-wrap: wrap;">
+              <span style="color: #ffcc00; font-weight: bold;">${pitchLabel}</span>
+              <span style="color: #38bdf8;">${hasAudio ? '🎵 Àudio personalitzat' : '🎹 So automàtic'}</span>
+              ${hasImg ? '<span style="color: #22c55e;">🖼️ Amb imatge</span>' : ''}
+            </div>
+          </div>
+          <div class="q-item-actions">
+            <button class="btn-edit-q" onclick="editQuestion(${idx})">✏️ Editar</button>
+            <button class="btn-delete-q" onclick="removeQuestion(${idx})">🗑️ Esborrar</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function editQuestion(idx) {
+      const q = state.questions[idx];
+      if (!q) return;
+
+      document.getElementById('editing-q-index').value = idx;
+      document.getElementById('form-q-title').innerText = `✏️ Modificant So #${idx + 1}:`;
+      document.getElementById('new-q-text').value = q.q || 'Com és aquest so?';
+      document.getElementById('new-q-pitch').value = q.pitch || 'agut';
+      document.getElementById('new-q-audio').value = q.audio || '';
+      document.getElementById('new-q-img').value = q.img || '';
+
+      document.getElementById('btn-save-question').innerText = "💾 GUARDAR MODIFICACIÓ";
+      document.getElementById('btn-cancel-edit').style.display = 'block';
+
+      document.getElementById('form-q-title').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetQuestionForm() {
+      document.getElementById('editing-q-index').value = "-1";
+      document.getElementById('form-q-title').innerText = "Afegir o Modificar So (Agut / Greu):";
+      document.getElementById('new-q-text').value = 'Com és aquest so?';
+      document.getElementById('new-q-pitch').value = 'agut';
+      document.getElementById('new-q-audio').value = '';
+      document.getElementById('new-q-img').value = '';
+
+      document.getElementById('btn-save-question').innerText = "+ AFEGIR SO";
+      document.getElementById('btn-cancel-edit').style.display = 'none';
+    }
+
+    function addOrUpdateQuestion() {
+      const editIndex = parseInt(document.getElementById('editing-q-index').value);
+      const qText = document.getElementById('new-q-text').value.trim() || "Com és aquest so?";
+      const qPitch = document.getElementById('new-q-pitch').value || "agut";
+      const qAudio = document.getElementById('new-q-audio').value.trim();
+      const qImg = document.getElementById('new-q-img').value.trim();
+
+      const questionData = {
+        q: qText,
+        pitch: qPitch,
+        synthPreset: qPitch === 'agut' ? 'bird' : 'drum',
+        img: qImg,
+        audio: qAudio
+      };
+
+      if (editIndex >= 0 && editIndex < state.questions.length) {
+        state.questions[editIndex] = questionData;
+      } else {
+        state.questions.push(questionData);
+      }
+
+      resetQuestionForm();
+      renderQuestionsList();
+    }
+
+    function importBulkQuestions() {
+      const rawText = document.getElementById('bulk-import-text').value.trim();
+      if (!rawText) {
+        alert("Enganxa primer un llistat de sons al quadre de text.");
+        return;
+      }
+
+      const blocks = rawText.split(/\n\s*\n/);
+      let countImported = 0;
+
+      blocks.forEach(block => {
+        const lines = block.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        if (lines.length > 0) {
+          const qText = lines[0];
+          let pitch = "agut";
+          let imgUrl = "";
+          let audioUrl = "";
+
+          for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].toLowerCase();
+            if (line.startsWith('pitch:') || line.startsWith('tipus:') || line.startsWith('resposta:')) {
+              const val = line.split(':')[1].trim();
+              if (val.includes('greu') || val.includes('baix')) pitch = "greu";
+            } else if (line.startsWith('img:')) {
+              imgUrl = lines[i].substring(4).trim();
+            } else if (line.startsWith('audio:')) {
+              audioUrl = lines[i].substring(6).trim();
+            }
+          }
+
+          if (qText.toLowerCase().includes('greu')) {
+            pitch = "greu";
+          }
+
+          state.questions.push({
+            q: qText,
+            pitch: pitch,
+            synthPreset: pitch === 'agut' ? 'bird' : 'drum',
+            img: imgUrl,
+            audio: audioUrl
+          });
+          countImported++;
+        }
+      });
+
+      if (countImported > 0) {
+        alert(`S'han importat ${countImported} sons correctament!`);
+        document.getElementById('bulk-import-text').value = '';
+        renderQuestionsList();
+      } else {
+        alert("No s'ha pogut interpretar el format del text.");
+      }
+    }
+
+    function removeQuestion(idx) {
+      if (state.questions.length <= 1) {
+        alert("Heu de mantenir com a mínim 1 so.");
+        return;
+      }
+      state.questions.splice(idx, 1);
+      resetQuestionForm();
+      renderQuestionsList();
+    }
+
+    function saveConfig() {
+      state.p1aName = document.getElementById('cfg-name-p1a').value.trim() || "EXPLORADOR";
+      state.p1aImg = document.getElementById('cfg-img-p1a').value.trim() || defaultState.p1aImg;
+      state.p1bName = document.getElementById('cfg-name-p1b').value.trim() || "HEROÏNA";
+      state.p1bImg = document.getElementById('cfg-img-p1b').value.trim() || defaultState.p1bImg;
+      state.bgImg = document.getElementById('cfg-bg-img').value.trim() || defaultState.bgImg;
+      state.timerSeconds = parseInt(document.getElementById('cfg-timer-seconds').value) || 15;
+
+      selectedPlayerName = state.p1aName;
+      selectedPlayerImg = state.p1aImg;
+
+      localStorage.setItem('agut_greu_infantil_cfg', JSON.stringify(state));
+      applyVisuals();
+      closeConfig();
+    }
+
+    window.onload = () => {
+      document.getElementById('config-modal').style.display = 'none';
+      document.getElementById('pin-modal').style.display = 'none';
+      document.getElementById('quiz-modal').style.display = 'none';
+      document.getElementById('results-screen').style.display = 'none';
+      document.getElementById('char-select-screen').style.display = 'none';
+      document.getElementById('grand-celebration-screen').style.display = 'none';
+      document.getElementById('start-screen').style.display = 'flex';
+      document.getElementById('btn-main-config').style.display = 'block';
+      document.getElementById('btn-exit-game').style.display = 'block';
+      renderGemsTracker();
+      applyVisuals();
+    };
+  </script>
+
+</body></html>
